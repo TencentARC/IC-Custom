@@ -1,0 +1,8 @@
+prompt: 
+custmization_mode: Position-aware
+input_mask_mode: Precise mask
+seg_ref_mode: Full Ref
+seed: 513097943
+guidance_scale: 40
+num_inference_steps: 50
+num_samples: 1

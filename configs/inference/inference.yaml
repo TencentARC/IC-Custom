@@ -1,0 +1,38 @@
+checkpoint_config:
+  dit_path: models/flux1-fill-dev.safetensors
+  ae_path: models/ae.safetensors
+  t5_path: models/t5-v1_1-xxl
+  clip_path: models/clip-vit-large-patch14
+  siglip_path: models/siglip-so400m-patch14-384
+  redux_path: models/flux1-redux-dev.safetensors
+  lora_path: models/ic-custom/dit_lora_0x1561.safetensors
+  img_txt_in_path: models/ic-custom/dit_txt_img_in_0x1561.safetensors
+  boundary_embeddings_path: models/ic-custom/dit_boundary_embeddings_0x1561.safetensors
+  task_register_embeddings_path: models/ic-custom/dit_task_register_embeddings_0x1561.safetensors
+
+inference_config:
+  seed: 123
+  guidance: 40
+  num_steps: 30
+  output_dir: results/inference
+  img_ref_path: assets/inference/001/img_ref.png
+  img_target_path: assets/inference/001/img_target.png
+  mask_target_path: assets/inference/001/mask_target.png
+  prompt: "masterpiece, best quality,"
+  neg_prompt: "worst quality, normal quality, low quality, low res, blurry,"
+  true_gs: 3
+  custom_mask_type: pos-aware-precise # options: pos-free, pos-aware-precise, pos-aware-drawn
+  use_background_preservation: False # Generally, it is not necessary to turn on.
+  use_progressive_background_preservation: False
+  background_blend_threshold: 0.0 # if use_background_preservation is True, recommend set this to 0.5~1.0
+  offload: True
+  show_progress: True
+
+
+model_config:
+  rank: 64
+  network_alpha: 64
+  single_blocks: "0,1,2,3,4,5,6,7,8,9"
+  double_blocks: "0,1,2,3,4,5,6,7,8,9"
+  img_in: True
+  txt_in: True

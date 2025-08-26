@@ -1,0 +1,8 @@
+prompt: A delicate necklace with a mother-of-pearl clover pendant hangs gracefully around the neck of a woman dressed in a black pinstripe blazer.
+custmization_mode: Position-aware
+input_mask_mode: User-drawn mask
+seg_ref_mode: Full Ref
+seed: 346969695
+guidance_scale: 40
+num_inference_steps: 50
+num_samples: 1
