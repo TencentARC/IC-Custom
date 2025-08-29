@@ -98,5 +98,5 @@ checkpoint_config:
 
 
 <p align="center">
-  <img src="assets/gradio_ui.png" alt="IC-Custom APP" width="80%">
+  <img src="../../assets/gradio_ui.png" alt="IC-Custom APP" width="80%">
 </p>
