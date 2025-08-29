@@ -4,7 +4,7 @@ A sophisticated image customization tool powered by advanced AI models.
 
 > 📺 **App Guide:**  
 > For a fast overview of how to use the app, watch this video:  
-> [IC-Custom App Usage Guide (YouTube)](https://www.youtube.com/watch?v=uaiZA3H5RV
+> [IC-Custom App Usage Guide (YouTube)](https://www.youtube.com/watch?v=uaiZA3H5RV)
 
 ---
 
@@ -98,5 +98,5 @@ checkpoint_config:
 
 
 <p align="center">
-  <img src="assets/gradio_ui.png" alt="IC-Custom Teaser" width="80%">
+  <img src="assets/gradio_ui.png" alt="IC-Custom APP" width="80%">
 </p>
