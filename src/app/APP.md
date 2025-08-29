@@ -96,6 +96,7 @@ checkpoint_config:
   vlm_path: "/path/to/Qwen2.5-VL-7B-Instruct"
 ```
 
+### APP Overview
 
 <p align="center">
   <img src="../../assets/gradio_ui.png" alt="IC-Custom APP" width="80%">
