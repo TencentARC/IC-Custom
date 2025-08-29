@@ -64,7 +64,7 @@ def resize_long_edge(
     Returns:
         np.ndarray: The resized image.
     """
-    h, w = image.size
+    w, h = image.size
     scale_ratio = long_edge_size / max(h, w)
     output_w = int(w * scale_ratio)
     output_h = int(h * scale_ratio)
@@ -156,6 +156,7 @@ def prepare_input_images(
     force_resize_long_edge: bool = False,
     return_type: str = "np"
     ) -> tuple[np.ndarray | Image.Image, np.ndarray | Image.Image, np.ndarray | Image.Image]:
+
 
     if custmization_mode.lower() == "position-free":
         img_target = np.ones_like(img_ref) * 255

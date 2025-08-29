@@ -1,13 +1,14 @@
 <div align="center">
 <img alt="ic-custom" src="./assets/IC-Custom-Icon.png">
 
-
+<br>
 
 <p align="center">
   <a href="https://liyaowei-stu.github.io/project/IC_Custom/"><strong>Project Page</strong></a> |
   <a href="https://arxiv.org/abs/2507.01926"><strong>Paper</strong></a> |
   <a href="https://huggingface.co/spaces/TencentARC/IC-Custom"><strong>Demo</strong></a> |
-  <a href="https://huggingface.co/TencentARC/IC-Custom"><strong>Model</strong></a>
+  <a href="https://huggingface.co/TencentARC/IC-Custom"><strong>Model</strong></a> |
+  <a href="https://www.youtube.com/watch?v=uaiZA3H5RVY"><strong>Introduction Video</strong></a>
 </p>
 </div>
 
@@ -21,6 +22,10 @@ IC-Custom is designed for diverse image customization scenarios, including:
 
 - **Position-free**: Input a reference image and a target description to generate a new image with the reference image's ID
   - *Examples*: IP customization and creation
+
+<p align="center">
+  <img src="assets/github_teaser.png" alt="IC-Custom Teaser" width="80%">
+</p>
 
 ---
 
@@ -104,9 +109,9 @@ Expected directory structure (example):
     |-- flux1-redux-dev.safetensors
 ```
 
-After manual download, edit the YAMLs in `configs/**` (e.g., `configs/inference/inference.yaml`) to point to your local model paths.
+After manual download, edit the YAMLs in `configs/**` (e.g., [`inference.yaml`](configs/inference/inference.yaml)) to point to your local model paths.
 
-- A compact per-model list with links is available in `MODEL_CARD.md`.
+- A compact per-model list with links is available in [`MODEL_CARD.md`](MODEL_CARD.md).
 
 ## 💻 Running Scripts
 
@@ -118,7 +123,7 @@ When running the app, **all required models are automatically downloaded**. Opti
 sh src/app/run_app.sh $HF_TOKEN $HF_CACHE_DIR
 ```
 
-For required vs optional models and configuration, see [src/app/APP.md](src/app/APP.md).
+For required vs optional models and configuration, see [APP.md](src/app/APP.md).
 
 ### Inference
 
@@ -135,7 +140,7 @@ Parameters:
 ## 📅 Update Logs
 
 - [X] **2025/07/03** - Released paper, webpage.
-- [X] **2025/08/26** - Released Checkpoint v0x1561, HF Demo, and Inference Code.
+- [X] **2025/08/26** - Released Checkpoint v0x1561, APP, and Inference Code.
 - [ ] **TBD** - Test and Training Code.
 
 ## 📝 Citation
@@ -164,7 +169,7 @@ We are pleased to support the open source community. For complete license detail
 
 ## 📬 Contact
 
-For any questions, feel free to email: `liyaowei01@gmail.com`
+For any questions, feel free to [email](mailto:liyaowei01@gmail.com).
 
 ## 🌟 Star History
 

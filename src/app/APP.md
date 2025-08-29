@@ -2,6 +2,10 @@
 
 A sophisticated image customization tool powered by advanced AI models.
 
+> 📺 **App Guide:**  
+> For a fast overview of how to use the app, watch this video:  
+> [IC-Custom App Usage Guide (YouTube)](https://www.youtube.com/watch?v=uaiZA3H5RV
+
 ---
 
 ## 🚀 Quick Start
@@ -91,3 +95,8 @@ checkpoint_config:
   ben2_path: "/path/to/BEN2_Base.pth"
   vlm_path: "/path/to/Qwen2.5-VL-7B-Instruct"
 ```
+
+
+<p align="center">
+  <img src="assets/gradio_ui.png" alt="IC-Custom Teaser" width="80%">
+</p>

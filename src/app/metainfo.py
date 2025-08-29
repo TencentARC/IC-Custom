@@ -1,103 +1,112 @@
 #### metainfo ####
 head = r"""
-<div style="text-align: center; margin: 1rem 0;">
-    <h1 style="margin-bottom: 0.5rem;">
-        <div style="font-size: 2.5rem; font-weight: 800;">
-            🎨 <span style="background: linear-gradient(120deg, #0ea5e9 0%, #6ee7b7 50%, #34d399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">IC-Custom</span>
+<div class="elegant-header">
+    <div class="header-content">
+        <!-- Main title -->
+        <h1 class="main-title">
+            <span class="title-icon">🎨</span>
+            <span class="title-text">IC-Custom</span>
+        </h1>
+        
+        <!-- Subtitle -->
+        <p class="subtitle">Transform your images with AI-powered customization</p>
+        
+        <!-- Action badges -->
+        <div class="header-badges">
+            <a href="https://liyaowei-stu.github.io/project/IC_Custom/" class="badge-link">
+                <span class="badge-icon">🔗</span>
+                <span class="badge-text">Project</span>
+            </a>
+            <a href="https://arxiv.org/abs/2507.01926" class="badge-link">
+                <span class="badge-icon">📄</span>
+                <span class="badge-text">Paper</span>
+            </a>
+            <a href="https://github.com/TencentARC/IC-Custom" class="badge-link">
+                <span class="badge-icon">💻</span>
+                <span class="badge-text">Code</span>
+            </a>
         </div>
-        <div style="font-size: 1.2rem; color: #4b5563; font-weight: 600; margin-top: 0.5rem;">
-            Diverse Image Customization via In-Context Learning
-        </div>
-    </h1>
-    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1rem;">
-        <a href="https://liyaowei-stu.github.io/project/IC_Custom/" class="badge-link" style="text-decoration: none;">
-            <img src='https://img.shields.io/badge/🔗_Project_Page-IC--Custom-34d399?style=for-the-badge&labelColor=1f2937' alt='Project Page'>
-        </a>
-        <a href="https://arxiv.org/abs/2507.01926" class="badge-link" style="text-decoration: none;">
-            <img src='https://img.shields.io/badge/📄_Paper-arXiv-0ea5e9?style=for-the-badge&labelColor=1f2937' alt='Paper'>
-        </a>
-        <a href="https://github.com/TencentARC/IC-Custom" class="badge-link" style="text-decoration: none;">
-            <img src='https://img.shields.io/badge/💻_Code-GitHub-6ee7b7?style=for-the-badge&labelColor=1f2937' alt='Code'>
-        </a>
     </div>
 </div>
-
-<style>
-.badge-link:hover {
-    transform: translateY(-2px);
-    opacity: 0.9;
-}
-</style>
 """
 
-description = r"""
-<div style="color: #1f2937; font-size: 1rem; line-height: 1.5; margin: 1rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; text-align: left;">
-    <p style="margin-bottom: 0.8rem;">
-        <span style="font-weight: 600; color: #0ea5e9;">🎨 What is IC-Custom?</span><br>
-        IC-Custom supports various image customization scenarios, including position-aware IP insertion and position-free subject-driven generation.
-    </p>
-    <p style="margin-bottom: 0;">
-        <span style="font-weight: 600; color: #34d399;">💡 Two Customization Modes:</span><br>
-        <span style="margin-left: 1rem;">• <b>Position-aware:</b> Place content precisely in masked areas (precise or user-drawn mask)</span><br>
-        <span style="margin-left: 1rem;">• <b>Position-free:</b> Global re-generation with subject preservation</span>
-    </p>
-</div>
-"""
 
 getting_started = r"""
-<div style="padding: 1rem; background: #f8fafc; border-radius: 8px; margin: 0rem 0;">
-    <div style="margin-bottom: 1.5rem;">
-        <div style="color: #4b5563; margin-bottom: 0.5rem;">Initial Setup:</div>
-        <ol style="margin: 0 0 0 1.2rem;">
-            <li style="margin-bottom: 0.5rem;">Select a <b>Custmization Mode</b>: Position-aware Mode (reference insertion) or Position-free Mode (subject-driven generation)</li>
-            <li style="margin-bottom: 0.5rem;">Upload a <b>reference image</b></li>
-        </ol>
+<div class="getting-started-container">
+    <!-- Header -->
+    <div class="guide-header">
+        <h3 class="guide-title">🚀 Quick Start Guide</h3>
+        <p class="guide-subtitle">Follow these steps to customize your images with IC-Custom</p>
     </div>
 
-    <div style="margin-bottom: 1.5rem;">
-        <div style="color: #4b5563; font-weight: 600; margin-bottom: 0.5rem;">Position-aware Mode:</div>
-        <ol start="3" style="margin: 0 0 0 1.2rem;">
-            <li style="margin-bottom: 0.5rem;">Select an <b>input mask mode</b> to switch between precise mask and user-drawn mask</li>
-            <li style="margin-bottom: 0.5rem;">Input <b>target image & mask</b>: precise mask (click for SAM prediction) or user-drawn mask (brush directly)</li>
-            <li style="margin-bottom: 0.5rem;">
-                Input <b>text prompt</b> (optional): describe the target scene<br>
-                <span style="color: #64748b; font-size: 0.97em;">
-                    (You can use "VLM Auto-generate" to generate a prompt automatically, <b>only available when enable_vlm_for_prompt=True</b>)
-                </span>
-            </li>
-            <li style="margin-bottom: 0.5rem;">View or modify the <b>target mask</b> to ensure proper coverage</li>
-            <li style="margin-bottom: 0.5rem;">Click "Submit" to generate the customized image</li>
-        </ol>
+    <!-- What is IC-Custom -->
+    <div class="info-card">
+        <div class="info-content">
+            <strong class="brand-name">IC-Custom</strong> offers two customization modes:
+            <span class="mode-badge position-aware">Position-aware</span>
+            (precise placement in masked areas) and
+            <span class="mode-badge position-free">Position-free</span>
+            (subject-driven generation).
+        </div>
     </div>
 
-    <div>
-        <div style="color: #4b5563; font-weight: 600; margin-bottom: 0.5rem;">Position-free Mode:</div>
-        <ol start="3" style="margin: 0 0 0 1.2rem;">
-            <li style="margin-bottom: 0.5rem;">
-                Input <b>text prompt</b> (necessary): describe the target scene<br>
-                <span style="color: #64748b; font-size: 0.97em;">
-                    (If <b>enable_vlm_for_prompt=True</b>, you can use "VLM Auto-polish" to polish your prompt, or "VLM Auto-generate" to generate a prompt automatically)
-                </span>
-            </li>
-            <li style="margin-bottom: 0.5rem;">
-                Segment the reference image (optional): 
-                <span>
-                    use the segment tool in advanced options to segment the reference image foreground 
-                    <b>only when <code>--enable_ben2_for_mask_ref=True</code></b>
-                </span>
-            </li>
-            <li style="margin-bottom: 0.5rem;">Click "Submit" to generate the customized image</li>
-        </ol>
-    </div>
-
-    <div style="margin-top: 1.5rem;">
-        <div style="color: #4b5563; font-weight: 600; margin-bottom: 0.5rem;">Tips:</div>
-        <ul style="margin: 0 0 0 1.2rem;">
-            <li style="margin-bottom: 0.5rem;">You can zoom out the page (Alt + "-" or ⌘ + "-") until it fits comfortably for operation</li>
+    <!-- Common Steps -->
+    <div class="step-card common-steps">
+        <div class="step-header">
+            <span class="step-number">1</span>
+            Initial Setup (Both Modes)
+        </div>
+        <ul class="step-list">
+            <li>Choose your <strong>customization mode</strong></li>
+            <li>Upload a <strong>reference image</strong> 📸</li>
         </ul>
     </div>
-</div>
 
+    <!-- Position-aware Mode -->
+    <div class="step-card position-aware-steps">
+        <div class="step-header">
+            <span class="step-number">2A</span>
+            🎯 Position-aware Mode Steps
+        </div>
+        <ul class="step-list">
+            <li>Select <strong>input mask mode</strong> (precise mask or user-drawn mask)</li>
+            <li>Upload <strong>target image</strong> and create mask (click for SAM or brush directly)</li>
+            <li>Add <strong>text prompt</strong> (optional) - use VLM buttons for auto-generation</li>
+            <li>Review and refine your <strong>mask</strong> using mask tools if needed</li>
+            <li>Click <span class="run-button position-aware">Run</span> ✨</li>
+        </ul>
+    </div>
+
+    <!-- Position-free Mode -->
+    <div class="step-card position-free-steps">
+        <div class="step-header">
+            <span class="step-number">2B</span>
+            🎨 Position-free Mode Steps
+        </div>
+        <ul class="step-list">
+            <li>Write your <strong>text prompt</strong> (required) - describe the target scene</li>
+            <li>Use VLM buttons for prompt auto-generation or polishing (if enabled)</li>
+            <li>Click <span class="run-button position-free">Run</span> ✨</li>
+        </ul>
+    </div>
+
+    <!-- Quick Tips -->
+    <div class="tips-card">
+        <div class="tips-content">
+            <strong>💡 Quick Tips:</strong> 
+            Use <kbd class="key-hint">Alt + "-"</kbd> or <kbd class="key-hint">⌘ + "-"</kbd> to zoom out for better operation • 
+            Adjust settings in <kbd class="key-hint">Advanced Options</kbd> • Use mask operations (<kbd class="key-hint">dilate</kbd>/<kbd class="key-hint">erode</kbd>/<kbd class="key-hint">bbox</kbd>) for better results • 
+            Try different <kbd class="key-hint">seeds</kbd> for varied outputs
+        </div>
+    </div>
+
+    <!-- Final Message -->
+    <div class="final-message">
+        <div class="final-text">
+            🎉 Ready to start? Collapse this guide and begin customizing!
+        </div>
+    </div>
+</div>
 """
 
 

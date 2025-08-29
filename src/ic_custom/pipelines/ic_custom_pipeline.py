@@ -243,6 +243,7 @@ class ICCustomPipeline:
         use_progressive_background_preservation: bool = True,
         background_blend_threshold: float = 0.8,
         num_images_per_prompt: int = 1,
+        gradio_progress=None,
         ):
 
         width = 16 * (width // 16)
@@ -294,6 +295,7 @@ class ICCustomPipeline:
             use_background_preservation=use_background_preservation,
             use_progressive_background_preservation=use_progressive_background_preservation,
             background_blend_threshold=background_blend_threshold,
+            gradio_progress=gradio_progress,
         )
 
     def forward(
@@ -318,6 +320,7 @@ class ICCustomPipeline:
         use_background_preservation,
         use_progressive_background_preservation,
         background_blend_threshold,
+        gradio_progress=None,
     ):
         has_neg_prompt = neg_prompt is not None 
         do_true_cfg = true_gs > 1 and has_neg_prompt
@@ -391,6 +394,7 @@ class ICCustomPipeline:
                 neg_txt_vec=neg_inp_cond['txt_vec'] if neg_inp_cond is not None else None,
                 show_progress=self.show_progress,
                 use_flash_attention=self.use_flash_attention,
+                gradio_progress=gradio_progress,
             )
                 
 

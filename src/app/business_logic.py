@@ -17,23 +17,44 @@ from constants import (
     DEFAULT_BACKGROUND_BLEND_THRESHOLD, DEFAULT_SEED, DEFAULT_NUM_IMAGES,
     DEFAULT_GUIDANCE, DEFAULT_TRUE_GS, DEFAULT_NUM_STEPS, DEFAULT_ASPECT_RATIO,
     DEFAULT_DILATION_KERNEL_SIZE, DEFAULT_MARKER_SIZE, DEFAULT_MARKER_THICKNESS,
-    DEFAULT_MASK_ALPHA, DEFAULT_COLOR_ALPHA, TIMESTAMP_FORMAT
+    DEFAULT_MASK_ALPHA, DEFAULT_COLOR_ALPHA, TIMESTAMP_FORMAT, SEGMENTATION_COLORS, SEGMENTATION_MARKERS
 )
 
+# Global holder for SAM mobile predictor injected from the app layer
+MOBILE_PREDICTOR = None
+BEN2_MODEL = None   # ben2 model injected from the app layer    
 
-def init_image_target_1(target_image, eg_idx):
-    """Initialize UI state when a precise-mask target image is uploaded."""
-    # If switching examples, do not run this init
+def set_mobile_predictor(predictor):
+    """Inject SAM mobile predictor into this module without changing function signatures."""
+    global MOBILE_PREDICTOR
+    MOBILE_PREDICTOR = predictor
+
+def set_ben2_model(ben2_model):
+    """Inject ben2 model into this module without changing function signatures."""
+    global BEN2_MODEL
+    BEN2_MODEL = ben2_model
+
+    
+def init_image_target_1(target_image):
+    """Initialize UI state when a target image is uploaded."""
+
+    # Handle both PIL Image (image_target_1) and ImageEditor dict (image_target_2)
     try:
-        if eg_idx is not None and str(eg_idx).strip() != "-1":
-            return (
-                gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
-                gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
-                gr.skip(), gr.skip(),
-            )
-    except Exception:
-        pass
-    image_target_state = np.array(target_image.convert("RGB"))
+        if isinstance(target_image, dict) and 'composite' in target_image:
+            # ImageEditor format (user-drawn mask)
+            image_target_state = np.array(target_image['composite'].convert("RGB"))
+        else:
+            # PIL Image format (precise mask)
+            image_target_state = np.array(target_image.convert("RGB"))
+    except Exception as e:
+        # If there's an error processing the image, skip initialization
+        print(f"Warning: Error processing target image in init_image_target: {e}")
+        return (
+            gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
+            gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
+            gr.skip(), gr.skip(), gr.update(value="-1")
+        )
+    
     selected_points = []
     mask_target_state = None
     prompt = None
@@ -47,44 +68,46 @@ def init_image_target_1(target_image, eg_idx):
     true_gs = DEFAULT_TRUE_GS
     num_steps = DEFAULT_NUM_STEPS
     aspect_ratio_val = gr.update(value=DEFAULT_ASPECT_RATIO)
-    
+
     return (image_target_state, selected_points, mask_target_state, prompt, 
             mask_gallery, result_gallery, use_background_preservation, 
             background_blend_threshold, seed, num_images_per_prompt, guidance, 
             true_gs, num_steps, aspect_ratio_val)
 
 
-def init_image_target_2(target_image, eg_idx):
-    """Initialize UI state when a user-drawn-mask target image is uploaded.
-
-    If an example is being applied (eg_idx != "-1"), skip initialization to avoid
-    overriding example-populated states.
-    """
-    # If switching examples, do not run this init
+def init_image_target_2(target_image):
+    """Initialize UI state when a target image is uploaded."""
+    # Handle both PIL Image (image_target_1) and ImageEditor dict (image_target_2)
     try:
-        if eg_idx is not None and str(eg_idx).strip() != "-1":
-            return (
-                gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
-                gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
-                gr.skip(), gr.skip(),
-            )
-    except Exception:
-        pass
-    image_target_state = np.array(target_image['composite'].convert("RGB"))
-    selected_points = []
-    mask_target_state = None
-    prompt = None
-    mask_gallery = []
-    result_gallery = []
-    use_background_preservation = False
-    background_blend_threshold = DEFAULT_BACKGROUND_BLEND_THRESHOLD
-    seed = DEFAULT_SEED
-    num_images_per_prompt = DEFAULT_NUM_IMAGES
-    guidance = DEFAULT_GUIDANCE
-    true_gs = DEFAULT_TRUE_GS
-    num_steps = DEFAULT_NUM_STEPS
-    aspect_ratio_val = gr.update(value=DEFAULT_ASPECT_RATIO)
+        if isinstance(target_image, dict) and 'composite' in target_image:
+            # ImageEditor format (user-drawn mask)
+            image_target_state = np.array(target_image['composite'].convert("RGB"))
+        else:
+            # PIL Image format (precise mask)
+            image_target_state = np.array(target_image.convert("RGB"))
+    except Exception as e:
+        # If there's an error processing the image, skip initialization
+        print(f"Warning: Error processing target image in init_image_target: {e}")
+        return (
+            gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
+            gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
+            gr.skip(), gr.skip(), gr.update(value="-1")
+        )
     
+    selected_points = gr.skip()
+    mask_target_state = gr.skip()
+    prompt = gr.skip()
+    mask_gallery = gr.skip()
+    result_gallery = gr.skip()
+    use_background_preservation = gr.skip()
+    background_blend_threshold = gr.skip()
+    seed = gr.skip()
+    num_images_per_prompt = gr.skip()
+    guidance = gr.skip()
+    true_gs = gr.skip()
+    num_steps = gr.skip()
+    aspect_ratio_val = gr.skip()
+
     return (image_target_state, selected_points, mask_target_state, prompt, 
             mask_gallery, result_gallery, use_background_preservation, 
             background_blend_threshold, seed, num_images_per_prompt, guidance, 
@@ -125,18 +148,24 @@ def init_image_reference(image_reference):
     )
 
 
-def undo_seg_points(orig_img, sel_pix, segmentation_func):
+def undo_seg_points(orig_img, sel_pix):
     """Remove the latest segmentation point and recompute the preview mask."""
     if len(sel_pix) != 0:
         temp = orig_img.copy()
         sel_pix.pop()
         # Online show seg mask
         if len(sel_pix) != 0:
-            temp, output_mask = segmentation_func(temp, sel_pix)
-        return temp.astype(np.uint8), output_mask
+            temp, output_mask = segmentation(temp, sel_pix, MOBILE_PREDICTOR, SEGMENTATION_COLORS, SEGMENTATION_MARKERS)
+            output_mask_pil = Image.fromarray(output_mask.astype("uint8"))
+            masked_img_pil = Image.fromarray(np.where(output_mask > 0, orig_img, 0).astype("uint8"))
+            mask_gallery = [masked_img_pil, output_mask_pil]
+        else:
+            output_mask = None
+            mask_gallery = []
+        return temp.astype(np.uint8), output_mask, mask_gallery
     else:
         gr.Warning("Nothing to Undo")
-        return orig_img, None
+        return orig_img, None, []
 
 
 def segmentation(img, sel_pix, mobile_predictor, colors, markers):
@@ -179,12 +208,16 @@ def segmentation(img, sel_pix, mobile_predictor, colors, markers):
     return masked_img, output_mask
 
 
-def get_point(img, sel_pix, evt, segmentation_func, mobile_predictor, colors, markers):
+def get_point(img, sel_pix, evt: gr.SelectData):
     """Handle a user click on the target image to add a foreground point."""
-    sel_pix.append((evt.index, 1))  # append the foreground_point
+    if evt is None or not hasattr(evt, 'index'):
+        gr.Warning(f"Event object missing index attribute. Event type: {type(evt)}")
+        return img, None, []
     
+    sel_pix.append((evt.index, 1))  # append the foreground_point
     # Online show seg mask
-    masked_img_seg, output_mask = segmentation_func(img, sel_pix, mobile_predictor, colors, markers)
+    global MOBILE_PREDICTOR
+    masked_img_seg, output_mask = segmentation(img, sel_pix, MOBILE_PREDICTOR, SEGMENTATION_COLORS, SEGMENTATION_MARKERS)
 
     # Apply dilation to output_mask
     output_mask = 1 - output_mask
@@ -326,76 +359,104 @@ def bounding_box(mask, image):
     return mask, [masked_img, mask]
 
 
-def change_input_mask_mode(input_mask_mode):
+def change_input_mask_mode(input_mask_mode, custmization_mode):
     """Change visibility of input mask mode components."""
-    if input_mask_mode == "Precise mask":
-        return gr.update(visible=True), gr.update(visible=False), gr.update(visible=True)
-    else:
-        return gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)
 
+    if custmization_mode == "Position-free":
+        return (
+            gr.update(visible=False), 
+            gr.update(visible=False), 
+            gr.update(visible=False),
+            )
+    elif input_mask_mode.lower() == "precise mask":
+        return (
+            gr.update(visible=True), 
+            gr.update(visible=False), 
+            gr.update(visible=True), 
+            )
+    elif input_mask_mode.lower() == "user-drawn mask":
+        return (
+            gr.update(visible=False), 
+            gr.update(visible=True), 
+            gr.update(visible=False), 
+            )
+    else:
+        gr.Warning("Invalid input mask mode")
+        return (
+            gr.skip(), gr.skip(), gr.skip()
+            )
 
 def change_custmization_mode(custmization_mode, input_mask_mode):
     """Change visibility and interactivity based on customization mode."""
-    if custmization_mode == "Position-free":
-        return (gr.update(value=None, interactive=False, visible=False),
-                gr.update(value=None, interactive=False, visible=False),
+
+
+    if custmization_mode.lower() == "position-free":
+        return (gr.update(interactive=False, visible=False),
                 gr.update(interactive=False, visible=False),
                 gr.update(interactive=False, visible=False),
                 gr.update(interactive=False, visible=False),
                 gr.update(interactive=False, visible=False),
-                gr.update(value=None, visible=False),
+                gr.update(interactive=False, visible=False),
                 gr.update(value="<s>Select a input mask mode</s>", visible=False),
-                gr.update(value="<s>Input target image & mask (for position-aware mode)</s>", visible=False),
+                gr.update(value="<s>Input target image & mask (Iterate clicking or brushing until the target is covered)</s>", visible=False),
                 gr.update(value="<s>View or modify the target mask</s>", visible=False),
                 gr.update(value="3. Input text prompt (necessary)"),
                 gr.update(value="4. Submit and view the output"),
-                gr.update(value=None), None, None)
+                gr.update(visible=False),
+                gr.update(visible=False),
+                
+                )
     else:
-        if input_mask_mode == "Precise mask":
-            return (gr.update(value=None, interactive=True, visible=True),
-                    gr.update(value=None, interactive=True, visible=False),
-                    gr.update(interactive=True, visible=True),
-                    gr.update(interactive=True, visible=True),
-                    gr.update(interactive=True, visible=True),
-                    gr.update(interactive=True, visible=True),
-                    gr.update(value=None, visible=True),
-                    gr.update(value="3. Select a input mask mode"),
-                    gr.update(value="4. Input target image & mask (for position-aware mode)"),
-                    gr.update(value="6. View or modify the target mask"),
-                    gr.update(value="5. Input text prompt (optional)"),
-                    gr.update(value="7. Submit and view the output"),
-                    gr.update(value=None), None, None)
-        else:
-            return (gr.update(value=None, interactive=True, visible=False),
-                    gr.update(value=None, interactive=True, visible=True),
+        if input_mask_mode.lower() == "precise mask":
+            return (gr.update(interactive=True, visible=True),
                     gr.update(interactive=True, visible=False),
                     gr.update(interactive=True, visible=True),
                     gr.update(interactive=True, visible=True),
                     gr.update(interactive=True, visible=True),
-                    gr.update(value=None, visible=True),
-                    gr.update(value="3. Select a input mask mode"),
-                    gr.update(value="4. Input target image & mask (for position-aware mode)"),
-                    gr.update(value="6. View or modify the target mask"),
-                    gr.update(value="5. Input text prompt (optional)"),
-                    gr.update(value="7. Submit and view the output"),
-                    gr.update(value=None), None, None)
+                    gr.update(interactive=True, visible=True),
+                    gr.update(value="3. Select a input mask mode", visible=True),
+                    gr.update(value="4. Input target image & mask (Iterate clicking or brushing until the target is covered)", visible=True),
+                    gr.update(value="6. View or modify the target mask", visible=True),
+                    gr.update(value="5. Input text prompt (optional)", visible=True),
+                    gr.update(value="7. Submit and view the output", visible=True),
+                    gr.update(visible=True, value="Precise mask"),
+                    gr.update(visible=True),
+                    )
+        elif input_mask_mode.lower() == "user-drawn mask":
+            return (gr.update(interactive=True, visible=False),
+                    gr.update(interactive=True, visible=True),
+                    gr.update(interactive=False, visible=False),
+                    gr.update(interactive=True, visible=True),
+                    gr.update(interactive=True, visible=True),
+                    gr.update(interactive=True, visible=True),
+                    gr.update(value="3. Select a input mask mode", visible=True),
+                    gr.update(value="4. Input target image & mask (Iterate clicking or brushing until the target is covered)", visible=True),
+                    gr.update(value="6. View or modify the target mask", visible=True),
+                    gr.update(value="5. Input text prompt (optional)", visible=True),
+                    gr.update(value="7. Submit and view the output", visible=True),
+                    gr.update(visible=True, value="User-drawn mask"),
+                    gr.update(visible=True),
+                    )
 
 
-def change_seg_ref_mode(seg_ref_mode, image_reference_state, move_to_center, ben2_model):
+
+def change_seg_ref_mode(seg_ref_mode, image_reference_state, move_to_center):
     """Change segmentation reference mode and handle background removal."""
     if image_reference_state is None:
         gr.Warning("Please upload the reference image first")
         return None, None
     
+    global BEN2_MODEL
+    
     if seg_ref_mode == "Full Ref":
         return image_reference_state, None
     else:
-        if ben2_model is None:
+        if BEN2_MODEL is None:
             gr.Warning("Please enable ben2 for mask reference first")
             return gr.skip(), gr.skip()
 
         image_reference_pil = Image.fromarray(image_reference_state)
-        image_reference_pil_rmbg = ben2_model.inference(image_reference_pil, move_to_center=move_to_center)
+        image_reference_pil_rmbg = BEN2_MODEL.inference(image_reference_pil, move_to_center=move_to_center)
         image_reference_rmbg = np.array(image_reference_pil_rmbg)
         return image_reference_rmbg, image_reference_rmbg
 

@@ -40,26 +40,19 @@ def parse_args():
     )
     parser.add_argument(
         "--save_results",
-        type=bool,
-        required=False,
-        default=False,
+        action="store_true",
         help="Save results",
     )
     parser.add_argument(
         "--enable_ben2_for_mask_ref",
-        type=bool,
-        required=False,
-        default=False,
+        action="store_true",
         help="Enable ben2 for mask reference",
     )
     parser.add_argument(
         "--enable_vlm_for_prompt",
-        type=bool,
-        required=False,
-        default=False,
+        action="store_true",
         help="Enable vlm for prompt",
     )
-    
 
     return parser.parse_args()
 

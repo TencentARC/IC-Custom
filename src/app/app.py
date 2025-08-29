@@ -14,15 +14,15 @@ import torch
 import gradio as gr
 
 from PIL import Image
+import time
 
 # Add current directory to path for imports
 sys.path.append(os.getcwd() + '/src/app')
 
 # Import modular components
 from config import parse_args, load_config, setup_environment
-from constants import SEGMENTATION_COLORS, SEGMENTATION_MARKERS
 from ui_components import (
-    create_theme, create_css, create_js, create_header_section, create_customization_section,
+    create_theme, create_css, create_header_section, create_customization_section,
     create_image_input_section, create_prompt_section, create_advanced_options_section,
     create_mask_operation_section, create_output_section, create_examples_section,
     create_citation_section
@@ -33,7 +33,8 @@ from business_logic import (
     undo_seg_points, segmentation, get_point, get_brush,
     dilate_mask, erode_mask, bounding_box,
     change_input_mask_mode, change_custmization_mode, change_seg_ref_mode,
-    vlm_auto_generate, vlm_auto_polish, save_results
+    vlm_auto_generate, vlm_auto_polish, save_results, set_mobile_predictor,
+    set_ben2_model,
 )
 
 # Import other dependencies
@@ -94,10 +95,13 @@ def run_model(
     image_target_state, mask_target_state, image_reference_ori_state,
     image_reference_rmbg_state, prompt, seed, guidance, true_gs, num_steps,
     num_images_per_prompt, use_background_preservation, background_blend_threshold,
-    aspect_ratio_name, custmization_mode, seg_ref_mode, input_mask_mode,
-    pipeline, assets_cache_dir
+    aspect_ratio, custmization_mode, seg_ref_mode, input_mask_mode,
+    pipeline, assets_cache_dir,
+    progress=gr.Progress()
 ):
     """Run IC-Custom pipeline with current UI state and return images."""
+    start_ts = time.time()
+    progress(0, desc="Starting generation...")
     # Select reference image and check inputs
     if seg_ref_mode == "Masked Ref":
         image_reference_state = image_reference_rmbg_state
@@ -116,20 +120,19 @@ def run_model(
         gr.Warning('Please select/draw the target mask')
         return None, seed, gr.update(placeholder=prompt, value="")
 
-    # Get mask type IDs and prepare images
+   
     mask_type_ids = get_mask_type_ids(custmization_mode, input_mask_mode)
     
     from constants import ASPECT_RATIO_TEMPLATE
-    output_w, output_h = ASPECT_RATIO_TEMPLATE[aspect_ratio_name]
+    output_w, output_h = ASPECT_RATIO_TEMPLATE[aspect_ratio]
     image_reference, image_target, mask_target = prepare_input_images(
         image_reference_state, custmization_mode, image_target_state, mask_target_state,
         width=output_w, height=output_h,
-        force_resize_long_edge="long edge" in aspect_ratio_name,
+        force_resize_long_edge="long edge" in aspect_ratio,
         return_type="pil"
     )
 
     gr.Info(f"Output WH resolution: {image_target.size[0]}px x {image_target.size[1]}px")
-
     # Run the model
     if seed == -1:
         seed = torch.randint(0, 2147483647, (1,)).item()
@@ -145,8 +148,9 @@ def run_model(
         background_blend_threshold=background_blend_threshold, true_gs=true_gs,
         neg_prompt="worst quality, normal quality, low quality, low res, blurry,",
         num_images_per_prompt=num_images_per_prompt,
+        gradio_progress=progress,
     )
-
+    
     # Save results
     results = save_results(
         output_img, image_reference, image_target, mask_target, prompt,
@@ -154,8 +158,11 @@ def run_model(
         num_steps, num_images_per_prompt, use_background_preservation,
         background_blend_threshold, true_gs, assets_cache_dir
     )
+    elapsed = time.time() - start_ts
+    progress(1.0, desc=f"Completed in {elapsed:.2f}s!")
+    gr.Info(f"Finished in {elapsed:.2f}s")
 
-    return results, -1, gr.update(placeholder="Last Input: " + prompt, value="")
+    return results, -1, gr.update(placeholder=f"Last Input ({elapsed:.2f}s): " + prompt, value="")
 
 
 def example_pipeline(
@@ -163,6 +170,7 @@ def example_pipeline(
     input_mask_mode, seg_ref_mode, prompt, seed, true_gs, eg_idx
 ):
     """Handle example loading in the UI."""
+
     if seg_ref_mode == "Full Ref":
         image_reference_ori_state = np.array(image_reference.convert("RGB"))
         image_reference_rmbg_state = None
@@ -194,10 +202,11 @@ def example_pipeline(
 
     result_gallery = [Image.open(IMG_GEN[int(eg_idx)]).convert("RGB")]
 
+
     if custmization_mode == "Position-free":
         return (image_reference_ori_state, image_reference_rmbg_state, image_target_state,
                 mask_target_state, mask_gallery, result_gallery, 
-                gr.skip(), gr.skip())
+                gr.update(visible=False), gr.update(visible=False))
 
     if input_mask_mode == "Precise mask":
         return (image_reference_ori_state, image_reference_rmbg_state, image_target_state,
@@ -209,6 +218,7 @@ def example_pipeline(
             bg_img = image_target_2.get('background') or image_target_2.get('composite')
         except Exception:
             bg_img = image_target_2
+
         return (
             image_reference_ori_state, image_reference_rmbg_state, image_target_state,
             mask_target_state, mask_gallery, result_gallery,
@@ -217,85 +227,94 @@ def example_pipeline(
         )
 
 
-def create_application(pipeline, mobile_predictor, vlm_processor, vlm_model, 
-                      ben2_model, assets_cache_dir):
+
+def create_application(pipeline, vlm_processor, vlm_model, assets_cache_dir):
     """Create the main Gradio application."""
     # Create theme and CSS
     theme = create_theme()
     css = create_css()
-    js = create_js()
-
+    
     with gr.Blocks(theme=theme, css=css) as demo:
-        # Hidden components
-        eg_idx = gr.Textbox(label="eg_idx", visible=False, value="-1")
 
-        # Create UI sections
-        create_header_section()
-        
-        # State variables
-        image_target_state = gr.State(value=None)
-        mask_target_state = gr.State(value=None)
-        image_reference_ori_state = gr.State(value=None)
-        image_reference_rmbg_state = gr.State(value=None)
-        selected_points = gr.State(value=[])
+        with gr.Column(elem_id="global_glass_container"):
+            
+            # Create UI sections
+            create_header_section()
 
-        # Main UI layout
-        with gr.Row():
-            with gr.Column(scale=1.45):
-                # Customization section
+            # Hidden components
+            eg_idx = gr.Textbox(label="eg_idx", visible=False, value="-1") 
+
+            # State variables
+            image_target_state = gr.State(value=None)
+            mask_target_state = gr.State(value=None)
+            image_reference_ori_state = gr.State(value=None)
+            image_reference_rmbg_state = gr.State(value=None)
+            selected_points = gr.State(value=[])
+
+
+            # Main UI content with optimized left-right layout
+            with gr.Column(elem_id="glass_card"):
+                # Top section - Mode selection (full width)
                 custmization_mode, md_custmization_mode = create_customization_section()
+                
+                # Main layout: Left for inputs, Right for outputs
+                with gr.Row(equal_height=False):
+                    # LEFT COLUMN - ALL INPUTS
+                    with gr.Column(scale=3, min_width=400):
+                        # Image input section
+                        (image_reference, input_mask_mode, image_target_1, image_target_2,
+                            undo_target_seg_button, md_image_reference, md_input_mask_mode, 
+                            md_target_image) = create_image_input_section()
+                        
+                        # Text prompt section
+                        prompt, vlm_generate_btn, vlm_polish_btn, md_prompt = create_prompt_section()
+                        
+                        # Advanced options (collapsible)
+                        (aspect_ratio, seg_ref_mode, move_to_center, use_background_preservation,
+                            background_blend_threshold, seed, num_images_per_prompt, guidance,
+                            num_steps, true_gs) = create_advanced_options_section()
+                        
+                    # RIGHT COLUMN - ALL OUTPUTS
+                    with gr.Column(scale=2, min_width=350):
+                        # Mask preview and operations
+                        (mask_gallery, dilate_button, erode_button, bounding_box_button,
+                            md_mask_operation) = create_mask_operation_section()
+                        
+                        # Generation controls and results
+                        result_gallery, submit_button, clear_btn, md_submit = create_output_section()
 
-                # Image input section
-                (image_reference, input_mask_mode, image_target_1, image_target_2,
-                 undo_target_seg_button, md_image_reference, md_input_mask_mode, 
-                 md_target_image) = create_image_input_section()
-
-                # Prompt section
-                prompt, vlm_generate_btn, vlm_polish_btn, md_prompt = create_prompt_section()
-
-                # Advanced options
-                (aspect_ratio, seg_ref_mode, move_to_center, use_background_preservation,
-                 background_blend_threshold, seed, num_images_per_prompt, guidance,
-                 num_steps, true_gs) = create_advanced_options_section()
-
-            with gr.Column(scale=1):
-                # Mask operation section
-                (mask_gallery, dilate_button, erode_button, bounding_box_button,
-                 md_mask_operation) = create_mask_operation_section()
-
-                # Output section
-                result_gallery, submit_button, clear_btn, md_submit = create_output_section()
-
-        # Examples section
-        examples = create_examples_section(
-            GRADIO_EXAMPLES,
-            inputs=[
-                image_reference,
-                image_target_1,
-                image_target_2,
-                custmization_mode,
-                input_mask_mode,
-                seg_ref_mode,
-                prompt,
-                seed,
-                true_gs,
-                eg_idx,
-            ],
-            outputs=[
-                image_reference_ori_state, 
-                image_reference_rmbg_state, 
-                image_target_state, 
-                mask_target_state, 
-                mask_gallery, 
-                result_gallery, 
-                image_target_1, 
-                image_target_2
-            ],
-            fn=example_pipeline,
-        )
-        
-        # Citation section
-        create_citation_section()
+                with gr.Row(elem_id="glass_card"):
+                    # Examples section
+                    examples = create_examples_section(
+                        GRADIO_EXAMPLES,
+                        inputs=[
+                            image_reference,
+                            image_target_1,
+                            image_target_2,
+                            custmization_mode,
+                            input_mask_mode,
+                            seg_ref_mode,
+                            prompt,
+                            seed,
+                            true_gs,
+                            eg_idx,
+                        ],
+                        outputs=[
+                            image_reference_ori_state, 
+                            image_reference_rmbg_state, 
+                            image_target_state, 
+                            mask_target_state, 
+                            mask_gallery, 
+                            result_gallery, 
+                            image_target_1, 
+                            image_target_2,
+                        ],
+                        fn=example_pipeline,
+                    )
+            
+            with gr.Row(elem_id="glass_card"):
+                # Citation section
+                create_citation_section()
 
         # Setup event handlers
         setup_event_handlers(
@@ -309,22 +328,10 @@ def create_application(pipeline, mobile_predictor, vlm_processor, vlm_model,
             ## Functions
             change_input_mask_mode, change_custmization_mode, 
             lambda seg_ref_mode, img_ref, move_to_center: change_seg_ref_mode(
-                seg_ref_mode, img_ref, move_to_center, ben2_model
+                seg_ref_mode, img_ref, move_to_center
             ),
             init_image_target_1, init_image_target_2, init_image_reference,
-            lambda img, sel_pix, evt: get_point(
-                img, sel_pix, evt,
-                lambda img, sel_pix: segmentation(
-                    img, sel_pix, mobile_predictor, SEGMENTATION_COLORS, SEGMENTATION_MARKERS
-                ),
-                mobile_predictor, SEGMENTATION_COLORS, SEGMENTATION_MARKERS
-            ),
-            lambda orig_img, sel_pix: undo_seg_points(
-                orig_img, sel_pix, 
-                lambda img, sel_pix: segmentation(
-                    img, sel_pix, mobile_predictor, SEGMENTATION_COLORS, SEGMENTATION_MARKERS
-                )
-            ),
+            get_point, undo_seg_points,
             get_brush,
             # VLM buttons
             vlm_generate_btn, vlm_polish_btn,
@@ -346,14 +353,14 @@ def create_application(pipeline, mobile_predictor, vlm_processor, vlm_model,
             use_background_preservation, background_blend_threshold, seed,
             num_images_per_prompt, guidance, true_gs, num_steps, aspect_ratio,
             submit_button,
-            eg_idx
+            eg_idx,
         )
 
         # Setup clear button
         clear_btn.add(
-            [image_reference, image_target_1, image_target_2, mask_gallery, result_gallery,
-             selected_points, image_target_state, mask_target_state, prompt,
-             image_reference_ori_state, image_reference_rmbg_state]
+            [image_reference, image_target_1,image_target_2, mask_gallery, result_gallery,
+            selected_points, image_target_state, mask_target_state, prompt,
+            image_reference_ori_state, image_reference_rmbg_state]
         )
 
     return demo
@@ -370,15 +377,16 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     weight_dtype = torch.bfloat16
 
-
     pipeline, mobile_predictor, vlm_processor, vlm_model, ben2_model = initialize_models(
         args, cfg, device, weight_dtype
     )
-
+    # Inject mobile predictor into business logic module so get_point can access it without lambdas
+    set_mobile_predictor(mobile_predictor)
+    set_ben2_model(ben2_model)
 
     # Create and launch the application
     demo = create_application(
-        pipeline, mobile_predictor, vlm_processor, vlm_model, ben2_model, args.assets_cache_dir
+        pipeline, vlm_processor, vlm_model, args.assets_cache_dir
     )
     
     # Launch the demo

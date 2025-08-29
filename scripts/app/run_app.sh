@@ -8,14 +8,19 @@ HF_CACHE_DIR=$2
 ASSETS_CACHE_DIR=$3
 
 if [ -z "$HF_TOKEN" ] && [ -z "$HF_CACHE_DIR" ] && [ -z "$ASSETS_CACHE_DIR" ]; then
-    python src/app/app.py --config configs/app/app.yaml
+    python src/app/app.py \
+        --config configs/app/app.yaml \
+        --save_results \
+        --enable_ben2_for_mask_ref \
+        # --enable_vlm_for_prompt \
 else
     python src/app/app.py \
         --config configs/app/app.yaml \
         --hf_token $HF_TOKEN \
         --hf_cache_dir $HF_CACHE_DIR \
         --assets_cache_dir $ASSETS_CACHE_DIR \
-        --enable_ben2_for_mask_ref False \
-        --enable_vlm_for_prompt False \
-        --save_results True
+        --save_results
+        # --enable_ben2_for_mask_ref \
+        # --enable_vlm_for_prompt \
 fi
+

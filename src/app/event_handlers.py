@@ -16,7 +16,7 @@ def setup_event_handlers(
     image_reference, image_reference_rmbg_state,
     # Functions
     change_input_mask_mode, change_custmization_mode, change_seg_ref_mode,
-    init_image_target_1, init_image_target_2, init_image_reference,
+    init_image_target_1,  init_image_target_2, init_image_reference,
     get_point, undo_seg_points, get_brush,
     # VLM buttons (UI components)
     vlm_generate_btn, vlm_polish_btn,
@@ -30,14 +30,14 @@ def setup_event_handlers(
     num_images_per_prompt, guidance, true_gs, num_steps, aspect_ratio,
     submit_button,
     # extra state
-    eg_idx
+    eg_idx,
 ):
     """Setup all event handlers for the application."""
     
     # Change input mask mode: precise mask or user-drawn mask
     input_mask_mode.change(
         change_input_mask_mode,
-        [input_mask_mode],
+        [input_mask_mode, custmization_mode],
         [image_target_1, image_target_2, undo_target_seg_button]
     )
 
@@ -46,9 +46,8 @@ def setup_event_handlers(
         change_custmization_mode,
         [custmization_mode, input_mask_mode],
         [image_target_1, image_target_2, undo_target_seg_button, dilate_button, 
-         erode_button, bounding_box_button, mask_gallery, md_input_mask_mode, 
-         md_target_image, md_mask_operation, md_prompt, md_submit, result_gallery, 
-         image_target_state, mask_target_state]
+         erode_button, bounding_box_button, md_input_mask_mode, 
+         md_target_image, md_mask_operation, md_prompt, md_submit, input_mask_mode, mask_gallery]
     )
 
     # Remove background for reference image
@@ -58,10 +57,10 @@ def setup_event_handlers(
         [image_reference, image_reference_rmbg_state]
     )
 
-    # Initialize components on upload
+    # Initialize components only on user upload (not programmatic updates)
     image_target_1.upload(
         init_image_target_1,
-        [image_target_1, eg_idx],
+        [image_target_1],
         [image_target_state, selected_points, prompt, mask_target_state, mask_gallery, 
          result_gallery, use_background_preservation, background_blend_threshold, seed, 
          num_images_per_prompt, guidance, true_gs, num_steps, aspect_ratio]
@@ -69,7 +68,7 @@ def setup_event_handlers(
 
     image_target_2.upload(
         init_image_target_2,
-        [image_target_2, eg_idx],
+        [image_target_2],
         [image_target_state, selected_points, prompt, mask_target_state, mask_gallery, 
          result_gallery, use_background_preservation, background_blend_threshold, seed, 
          num_images_per_prompt, guidance, true_gs, num_steps, aspect_ratio]
@@ -95,7 +94,7 @@ def setup_event_handlers(
     undo_target_seg_button.click(
         undo_seg_points,
         [image_target_state, selected_points],
-        [image_target_1, mask_target_state]
+        [image_target_1, mask_target_state, mask_gallery]
     )
 
     # Brush for image_target_2
@@ -146,6 +145,11 @@ def setup_event_handlers(
         aspect_ratio, custmization_mode, seg_ref_mode, input_mask_mode,
     ]
 
-    submit_button.click(fn=run_model, inputs=ips, outputs=[result_gallery, seed, prompt])
+    submit_button.click(
+        fn=run_model,
+        inputs=ips,
+        outputs=[result_gallery, seed, prompt],
+        show_progress=True,
+    )
 
 

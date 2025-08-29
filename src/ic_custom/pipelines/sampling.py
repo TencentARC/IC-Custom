@@ -335,6 +335,7 @@ def denoise(
     neg_txt_vec: Tensor = None,
     show_progress: bool = False,
     use_flash_attention: bool = False,
+    gradio_progress=None,
     ):
     do_true_cfg = true_gs > 1 and neg_txt is not None
 
@@ -346,6 +347,12 @@ def denoise(
     for step, (t_curr, t_prev) in enumerate(zip(timesteps[:-1], timesteps[1:])):
         if show_progress:
             print_progress_bar(step, num_steps, prefix='Denoising:', suffix=f'Step {step+1}/{num_steps}')
+        
+        # Update Gradio progress if available
+        if gradio_progress is not None:
+            # Map denoise progress to 0.2-0.8 range (since 0.0-0.2 is preprocessing, 0.8-1.0 is postprocessing)
+            progress_value = (step / num_steps)
+            gradio_progress(progress_value, desc=f"Denoising step {step+1}/{num_steps}")
 
         t_vec = torch.full((img.shape[0],), t_curr, dtype=img.dtype, device=img.device)
         model_dtype = list(model.parameters())[0].dtype

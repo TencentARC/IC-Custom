@@ -49,25 +49,12 @@ Additional models for enhanced app functionality:
 
 ---
 
-## 📊 Model Summary
-
-| Category | Count | Total Size (approx.) |
-|----------|-------|---------------------|
-| IC-Custom Models | 4 | ~2GB |
-| Base Models | 6 | ~25GB |
-| App Interactive (Required) | 1 | ~2.5GB |
-| App Interactive (Optional) | 2 | ~10GB |
-| **Total (Required)** | **11** | **~29.5GB** |
-| **Total (All Optional)** | **13** | **~39.5GB** |
-
----
-
 ## 🔗 Model Usage
 
 - **Automatic Download**: All required models are downloaded automatically when running scripts
-- **Manual Configuration**: Model paths can be specified in `configs/app/app.yaml` or `configs/inference/*.yaml`
+- **Manual Configuration**: Model paths can be specified in [`app.yaml`](configs/app/app.yaml) or [`inference.yaml`](configs/inference/inference.yaml)
 - **Optional Models**: BEN2 and Qwen2.5-VL are disabled by default and only downloaded when explicitly enabled
 
 For detailed configuration instructions, see:
 - [README.md](README.md) - General setup and model download
-- [src/app/APP.md](src/app/APP.md) - App-specific configuration and CLI arguments
+- [APP.md](src/app/APP.md) - App-specific configuration and CLI arguments

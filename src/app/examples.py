@@ -12,7 +12,7 @@ IMG_REF = [
     ## pos-aware: precise mask
     "assets/gradio/pos_aware/001/img_ref.png",
     "assets/gradio/pos_aware/002/img_ref.png", 
-    ## pos-aware: user-drawn mask
+    ## pos-aware: User-drawn mask mask
     "assets/gradio/pos_aware/003/img_ref.png",
     "assets/gradio/pos_aware/004/img_ref.png",
     "assets/gradio/pos_aware/005/img_ref.png",
@@ -27,7 +27,7 @@ IMG_TGT1 = [
     ## pos-aware: precise mask
     "assets/gradio/pos_aware/001/img_target.png", 
     "assets/gradio/pos_aware/002/img_target.png", 
-    ## pos-aware: user-drawn mask
+    ## pos-aware: User-drawn mask mask
     None,
     None,
     None,
@@ -42,7 +42,7 @@ IMG_TGT2 = [
     ## pos-aware: precise mask
     null_dict, 
     null_dict, 
-    ## pos-aware: user-drawn mask
+    ## pos-aware: User-drawn mask mask
     make_dict("assets/gradio/pos_aware/003/img_target.png"), 
     make_dict("assets/gradio/pos_aware/004/img_target.png"),
     make_dict("assets/gradio/pos_aware/005/img_target.png"),
@@ -57,7 +57,7 @@ MASK_TGT = [
     ## pos-aware: precise mask
     "assets/gradio/pos_aware/001/mask_target.png", 
     "assets/gradio/pos_aware/002/mask_target.png", 
-    ## pos-aware: user-drawn mask
+    ## pos-aware: User-drawn mask mask
     "assets/gradio/pos_aware/003/mask_target.png", 
     "assets/gradio/pos_aware/004/mask_target.png",
     "assets/gradio/pos_aware/005/mask_target.png",
@@ -86,7 +86,7 @@ INPUT_MASK_MODE = [
     ## pos-aware: precise mask
     "Precise mask", 
     "Precise mask", 
-    ## pos-aware: user-drawn mask
+    ## pos-aware: User-drawn mask mask
     "User-drawn mask", 
     "User-drawn mask",
     "User-drawn mask",
@@ -115,7 +115,7 @@ PROMPTS = [
     ## pos-aware: precise mask
     "", 
     "", 
-    ## pos-aware: user-drawn mask
+    ## pos-aware: User-drawn mask mask
     "A delicate necklace with a mother-of-pearl clover pendant hangs gracefully around the neck of a woman dressed in a black pinstripe blazer.",
     "",
     "",
@@ -130,7 +130,7 @@ IMG_GEN = [
     ## pos-aware: precise mask
     "assets/gradio/pos_aware/001/img_gen.png", 
     "assets/gradio/pos_aware/002/img_gen.png", 
-    ## pos-aware: user-drawn mask
+    ## pos-aware: User-drawn mask mask
     "assets/gradio/pos_aware/003/img_gen.png",
     "assets/gradio/pos_aware/004/img_gen.png",
     "assets/gradio/pos_aware/005/img_gen.png",
