@@ -1,0 +1,23 @@
+checkpoint_config:
+  dit_path: models/flux1-fill-dev.safetensors
+  ae_path: models/ae.safetensors
+  t5_path: models/t5-v1_1-xxl
+  clip_path: models/clip-vit-large-patch14
+  siglip_path: models/siglip-so400m-patch14-384
+  redux_path: models/flux1-redux-dev.safetensors
+  lora_path: models/ic-custom/dit_lora_0x1561.safetensors
+  img_txt_in_path: models/ic-custom/dit_txt_img_in_0x1561.safetensors
+  boundary_embeddings_path: models/ic-custom/dit_boundary_embeddings_0x1561.safetensors
+  task_register_embeddings_path: models/ic-custom/dit_task_register_embeddings_0x1561.safetensors
+  ben2_path: models/BEN2_Base.pth
+  sam_path: models/sam_vit_h_4b8939.pth
+  vlm_path: models/Qwen2.5-VL-7B-Instruct
+
+
+model_config:
+  rank: 64
+  network_alpha: 64
+  single_blocks: "0,1,2,3,4,5,6,7,8,9"
+  double_blocks: "0,1,2,3,4,5,6,7,8,9"
+  img_in: True
+  txt_in: True
