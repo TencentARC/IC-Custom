@@ -338,6 +338,13 @@ def load_t5(
         model: Loaded T5 model
     """
     logger.info(f"Loading T5 model: {name}")
+    name = resolve_model_path(
+        name=name,
+        repo_id_field="repo_id",
+        filename_field=None,
+        ckpt_path_field="ckpt_path",
+        hf_download=False,
+    )
     return load_embedder(
         name=name,
         is_clip=False,
@@ -363,6 +370,13 @@ def load_clip(
     Returns:
         model: Loaded CLIP model
     """
+    name = resolve_model_path(
+        name=name,
+        repo_id_field="repo_id",
+        filename_field=None,
+        ckpt_path_field="ckpt_path",
+        hf_download=False,
+    )
     logger.info(f"Loading CLIP model: {name}")
     return load_embedder(
         name=name,
