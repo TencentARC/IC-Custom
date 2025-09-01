@@ -2,7 +2,6 @@ accelerate==1.6.0
 diffusers==0.33.1
 einops==0.8.1
 omegaconf==2.3.0
-timm==0.6.7
 opencv-python==4.11.0.86
 peft==0.15.2
 qwen-vl-utils==0.0.11
@@ -21,8 +20,7 @@ torchaudio==2.6.0
 torchvision==0.21.0
 sentencepiece==0.2.0
 huggingface-hub==0.34.4
-timm==1.0.19
-open_clip_torch==3.1.0
 safetensors==0.5.3
-Pillow==10.4.0
+open_clip_torch==3.1.0
+timm==1.0.19
 # flash-attn==2.7.3
