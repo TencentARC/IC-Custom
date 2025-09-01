@@ -366,8 +366,7 @@ class ICCustomPipeline:
         )
 
         with torch.no_grad():
-            if self.offload:
-                self.t5, self.clip, self.image_encoder = self.t5.to(self.device), self.clip.to(self.device), self.image_encoder.to(self.device)
+            self.t5, self.clip, self.image_encoder = self.t5.to(self.device), self.clip.to(self.device), self.image_encoder.to(self.device)
 
             if self.image_encoder is not None:
                 inp_cond = prepare_with_redux(t5=self.t5, clip=self.clip, image_encoder=self.image_encoder, img=x, img_ip=img_ip, prompt=prompt, num_images_per_prompt=num_images_per_prompt)
@@ -384,8 +383,9 @@ class ICCustomPipeline:
 
             if self.offload:
                 self.offload_model_to_cpu(self.t5, self.clip, self.image_encoder)
-                self.model = self.model.to(self.device)
-                self.ae.encoder = self.ae.encoder.to(self.device)
+
+            self.model = self.model.to(self.device)
+            self.ae.encoder = self.ae.encoder.to(self.device)
 
             inp_img_cond = prepare_image_cond(
                 ae=self.ae,  
@@ -429,7 +429,8 @@ class ICCustomPipeline:
 
             if self.offload:
                 self.offload_model_to_cpu(self.model, self.ae.encoder)
-                self.ae.decoder = self.ae.decoder.to(x.device)
+            
+            self.ae.decoder = self.ae.decoder.to(x.device)
 
             x = unpack(x.float(), height, width)
             x = self.ae.decode(x)
