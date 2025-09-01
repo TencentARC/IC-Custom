@@ -133,7 +133,7 @@ tensorflow_code
 
 # Models
 proc_data
-models
+/models
 
 # examples
 runs
