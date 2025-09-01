@@ -1,9 +1,0 @@
-prompt: The bright yellow alarm clock is perched on a snowy mountain peak at sunrise, casting long shadows across the pristine white landscape.
-
-custmization_mode: Position-free
-input_mask_mode: Precise mask
-seg_ref_mode: Full Ref
-seed: 1787142651
-guidance_scale: 40
-num_inference_steps: 50
-num_samples: 1

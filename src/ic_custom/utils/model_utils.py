@@ -162,7 +162,7 @@ def resolve_model_path(
         path = getattr(configs[name], ckpt_path_field)
         
         # If local path exists, use it
-        if os.path.exists(path):
+        if path is not None and os.path.exists(path):
             return path
         
         # If download is allowed and we have repo info
@@ -181,8 +181,8 @@ def resolve_model_path(
                     filename,
                 )
             
-            # If we just need the repo ID
-            return getattr(configs[name], repo_id_field)
+        # If we just need the repo ID
+        return getattr(configs[name], repo_id_field)
     
     # If all else fails, assume name is the path/repo_id
     return name
@@ -305,7 +305,7 @@ def load_embedder(
         repo_id_field="repo_id",
         filename_field=None,  # No specific file needed
         ckpt_path_field="ckpt_path",
-        hf_download=False,  # HFEmbedder handles downloads itself
+        hf_download=True, 
     )
     
     # Initialize and return the model
@@ -338,13 +338,6 @@ def load_t5(
         model: Loaded T5 model
     """
     logger.info(f"Loading T5 model: {name}")
-    name = resolve_model_path(
-        name=name,
-        repo_id_field="repo_id",
-        filename_field=None,
-        ckpt_path_field="ckpt_path",
-        hf_download=False,
-    )
     return load_embedder(
         name=name,
         is_clip=False,
@@ -370,13 +363,6 @@ def load_clip(
     Returns:
         model: Loaded CLIP model
     """
-    name = resolve_model_path(
-        name=name,
-        repo_id_field="repo_id",
-        filename_field=None,
-        ckpt_path_field="ckpt_path",
-        hf_download=False,
-    )
     logger.info(f"Loading CLIP model: {name}")
     return load_embedder(
         name=name,
@@ -455,7 +441,7 @@ def load_redux(
     redux_path = resolve_model_path(
         name=redux_name,
         repo_id_field="repo_id",
-        filename_field="flow_filename",
+        filename_field="filename",
         ckpt_path_field="ckpt_path",
         hf_download=True,
     )
@@ -467,7 +453,7 @@ def load_redux(
         repo_id_field="repo_id",
         filename_field=None,  # No specific file needed
         ckpt_path_field="ckpt_path",
-        hf_download=False,  # ReduxImageEncoder handles SigLIP downloads itself
+        hf_download=True,
     )
 
     # Initialize and return the model

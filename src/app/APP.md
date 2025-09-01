@@ -11,14 +11,23 @@ A sophisticated image customization tool powered by advanced AI models.
 ## 🚀 Quick Start
 
 ```bash
-python src/app/app.py \
-  --config configs/app/app.yaml \
-  --hf_token $HF_TOKEN \
-  --hf_cache_dir $HF_CACHE_DIR \
-  --assets_cache_dir results/app \
-  --enable_ben2_for_mask_ref False \
-  --enable_vlm_for_prompt False \
-  --save_results True
+if [ -z "$HF_TOKEN" ] && [ -z "$HF_CACHE_DIR" ] && [ -z "$ASSETS_CACHE_DIR" ]; then
+    python src/app/app.py \
+        --config configs/app/app.yaml \
+        --save_results \
+        --enable_ben2_for_mask_ref \
+        --enable_vlm_for_prompt \
+else
+    python src/app/app.py \
+        --config configs/app/app.yaml \
+        --hf_token $HF_TOKEN \
+        --hf_cache_dir $HF_CACHE_DIR \
+        --assets_cache_dir $ASSETS_CACHE_DIR \
+        --save_results \
+        --enable_ben2_for_mask_ref \
+        --enable_vlm_for_prompt \
+fi
+
 ```
 
 ---

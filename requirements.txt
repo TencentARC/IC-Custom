@@ -12,7 +12,7 @@ webdataset==0.2.111
 segment-anything==1.0
 tensorboard==2.19.0
 tensorboardx==2.6.2.2
-transformers==4.51.3
+transformers==4.51.0
 gradio==5.43.1
 tqdm==4.67.1
 xformers==0.0.29.post2

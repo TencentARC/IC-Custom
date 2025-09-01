@@ -340,7 +340,7 @@ def create_examples_section(examples_list, inputs, outputs, fn):
         outputs=outputs,
         fn=fn,
         cache_examples=False,
-        examples_per_page=5,
+        examples_per_page=10,
         run_on_click=True,
     )
     return examples

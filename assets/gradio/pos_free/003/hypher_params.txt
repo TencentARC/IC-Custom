@@ -1,8 +1,0 @@
-prompt: A Lego figure dressed in a vibrant chicken costume, complete with a red comb and wattle, is sitting on a weathered wooden park bench, surrounded by lush green grass and blooming flowers.
-custmization_mode: Position-free
-input_mask_mode: Precise mask
-seg_ref_mode: Full Ref
-seed: 380870021
-guidance_scale: 40
-num_inference_steps: 50
-num_samples: 1

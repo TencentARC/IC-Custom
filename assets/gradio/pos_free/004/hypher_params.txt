@@ -1,8 +1,0 @@
-prompt: The crocheted gingerbread man is perched on a tree branch in a dense forest, with sunlight filtering through the leaves, casting dappled shadows around him.
-custmization_mode: Position-free
-input_mask_mode: Precise mask
-seg_ref_mode: Full Ref
-seed: 2126677963
-guidance_scale: 48
-num_inference_steps: 50
-num_samples: 1

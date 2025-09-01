@@ -19,8 +19,8 @@ else
         --hf_token $HF_TOKEN \
         --hf_cache_dir $HF_CACHE_DIR \
         --assets_cache_dir $ASSETS_CACHE_DIR \
-        --save_results
-        # --enable_ben2_for_mask_ref \
+        --save_results \
+        --enable_ben2_for_mask_ref \
         # --enable_vlm_for_prompt \
 fi
 

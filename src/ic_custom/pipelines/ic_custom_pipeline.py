@@ -1,4 +1,4 @@
-
+import os
 import re
 from typing import List, Optional, Union
 
@@ -23,7 +23,8 @@ from ..utils.model_utils import (
     load_clip,
     load_ic_custom,
     load_t5,
-    load_redux
+    load_redux,
+    resolve_model_path
 )
 
 
@@ -43,8 +44,8 @@ class ICCustomPipeline:
         clip_path: str = "clip-vit-large-patch14", 
         t5_path: str = "t5-v1_1-xxl", 
         siglip_path: str = "siglip-so400m-patch14-384", 
-        ae_path: str = "flux-fill-dev", 
-        dit_path: str = "flux1-fill-dev", 
+        ae_path: str = "flux-fill-dev-ae", 
+        dit_path: str = "flux-fill-dev-dit", 
         redux_path: str = "flux1-redux-dev", 
         lora_path: str = "dit_lora_0x1561",
         img_txt_in_path: str = "dit_txt_img_in_0x1561",
@@ -123,7 +124,14 @@ class ICCustomPipeline:
         double_blocks_idx: str = None, 
         single_blocks_idx: str = None,
         ):
-        assert lora_path is not None, "lora_path is required"
+        if not os.path.exists(lora_path):
+            lora_path = resolve_model_path(
+                name=lora_path,
+                repo_id_field="repo_id",
+                filename_field="filename",
+                ckpt_path_field="ckpt_path",
+                hf_download=True,
+            )
         weights = load_sft(lora_path)
         self.update_model_with_lora(weights, network_alpha, double_blocks_idx, single_blocks_idx)
 
@@ -171,17 +179,38 @@ class ICCustomPipeline:
         self.load_model_weights(weights, strict=False)
 
     def set_img_txt_in(self, img_txt_in_path: str):
-        assert img_txt_in_path is not None, "img_txt_in_path is required"
+        if not os.path.exists(img_txt_in_path):
+            img_txt_in_path = resolve_model_path(
+                name=img_txt_in_path,
+                repo_id_field="repo_id",
+                filename_field="filename",
+                ckpt_path_field="ckpt_path",
+                hf_download=True,
+            )
         weights = load_sft(img_txt_in_path)
         self.load_model_weights(weights, strict=False)
 
     def set_boundary_embeddings(self, boundary_embeddings_path: str):
-        assert boundary_embeddings_path is not None, "boundary_embeddings_path is required"
+        if not os.path.exists(boundary_embeddings_path):
+            boundary_embeddings_path = resolve_model_path(
+                name=boundary_embeddings_path,
+                repo_id_field="repo_id",
+                filename_field="filename",
+                ckpt_path_field="ckpt_path",
+                hf_download=True,
+            )
         weights = load_sft(boundary_embeddings_path)
         self.load_model_weights(weights, strict=False)
 
     def set_task_register_embeddings(self, task_register_embeddings_path: str):
-        assert task_register_embeddings_path is not None, "task_register_embeddings_path is required"
+        if not os.path.exists(task_register_embeddings_path):
+            task_register_embeddings_path = resolve_model_path(
+                name=task_register_embeddings_path,
+                repo_id_field="repo_id",
+                filename_field="filename",
+                ckpt_path_field="ckpt_path",
+                hf_download=True,
+            )
         weights = load_sft(task_register_embeddings_path)
         self.load_model_weights(weights, strict=False)
 

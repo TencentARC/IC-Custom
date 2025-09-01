@@ -42,16 +42,19 @@ if __name__ == "__main__":
         repo_id="openai/clip-vit-large-patch14",
         local_dir=os.path.join(args.local_dir, "clip-vit-large-patch14"),
         resume_download=True,
+        ignore_patterns=["*.h5", "tf_model.h5"], # Ignore TensorFlow model files
     )
     snapshot_download(
         repo_id="google/t5-v1_1-xxl",
         local_dir=os.path.join(args.local_dir, "t5-v1_1-xxl"),
         resume_download=True,
+        ignore_patterns=["*.h5", "tf_model.h5"], # Ignore TensorFlow model files
     )
     snapshot_download(
         repo_id="google/siglip-so400m-patch14-384",
         local_dir=os.path.join(args.local_dir, "siglip-so400m-patch14-384"),
         resume_download=True,
+        ignore_patterns=["*.h5", "tf_model.h5"], # Ignore TensorFlow model files
     )
 
     print("Done, The models are saved in ", args.local_dir)

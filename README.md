@@ -42,6 +42,7 @@ IC-Custom is designed for diverse image customization scenarios, including:
 - [📅 Update Logs](#-update-logs)
 - [📝 Citation](#-citation)
 - [💖 Acknowledgements](#-acknowledgements)
+- [Limitation](#limitation)
 - [📄 License](#-license)
 - [📬 Contact](#-contact)
 - [🌟 Star History](#-star-history)
@@ -143,6 +144,7 @@ Parameters:
 - [X] **2025/07/03** - Released paper, webpage.
 - [X] **2025/08/26** - Released Checkpoint v0x1561, APP, and Inference Code.
 - [ ] **TBD** - Test and Training Code.
+- [ ] **TBD** - A stronger model version.
 
 ## 📝 Citation
 
@@ -164,6 +166,11 @@ We gratefully acknowledge the use of code from:
 We also thank [Hugging Face](https://huggingface.co/) for providing professional model hosting and Spaces for deployment.
 
 
+## Limitation
+Current limitations are mainly inference speed and the need for more flexible instruction following. We plan to improve these aspects in future updates. If you have any feedback, please feel free to contact us.
+
+
+
 ## 📄 License
 
 We are pleased to support the open source community. For complete license details, see [LICENSE](LICENSE) and [NOTICE](NOTICE). 
@@ -171,6 +178,7 @@ We are pleased to support the open source community. For complete license detail
 ## 📬 Contact
 
 For any questions, feel free to [email](mailto:liyaowei01@gmail.com).
+
 
 ## 🌟 Star History
 

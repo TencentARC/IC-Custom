@@ -51,16 +51,16 @@ def initialize_models(args, cfg, device, weight_dtype):
     """Initialize all required models."""
     # Load IC-Custom pipeline
     pipeline = ICCustomPipeline(
-        clip_path=cfg.checkpoint_config.clip_path,
-        t5_path=cfg.checkpoint_config.t5_path,
-        siglip_path=cfg.checkpoint_config.siglip_path,
-        ae_path=cfg.checkpoint_config.ae_path,
-        dit_path=cfg.checkpoint_config.dit_path,
-        redux_path=cfg.checkpoint_config.redux_path,
-        lora_path=cfg.checkpoint_config.lora_path,
-        img_txt_in_path=cfg.checkpoint_config.img_txt_in_path,
-        boundary_embeddings_path=cfg.checkpoint_config.boundary_embeddings_path,
-        task_register_embeddings_path=cfg.checkpoint_config.task_register_embeddings_path,
+        clip_path=cfg.checkpoint_config.clip_path if os.path.exists(cfg.checkpoint_config.clip_path) else "clip-vit-large-patch14",
+        t5_path=cfg.checkpoint_config.t5_path if os.path.exists(cfg.checkpoint_config.t5_path) else "t5-v1_1-xxl",
+        siglip_path=cfg.checkpoint_config.siglip_path if os.path.exists(cfg.checkpoint_config.siglip_path) else "siglip-so400m-patch14-384",
+        ae_path=cfg.checkpoint_config.ae_path if os.path.exists(cfg.checkpoint_config.ae_path) else "flux-fill-dev-ae",
+        dit_path=cfg.checkpoint_config.dit_path if os.path.exists(cfg.checkpoint_config.dit_path) else "flux-fill-dev-dit",
+        redux_path=cfg.checkpoint_config.redux_path if os.path.exists(cfg.checkpoint_config.redux_path) else "flux1-redux-dev",
+        lora_path=cfg.checkpoint_config.lora_path if os.path.exists(cfg.checkpoint_config.lora_path) else "dit_lora_0x1561",
+        img_txt_in_path=cfg.checkpoint_config.img_txt_in_path if os.path.exists(cfg.checkpoint_config.img_txt_in_path) else "dit_txt_img_in_0x1561",
+        boundary_embeddings_path=cfg.checkpoint_config.boundary_embeddings_path if os.path.exists(cfg.checkpoint_config.boundary_embeddings_path) else "dit_boundary_embeddings_0x1561",
+        task_register_embeddings_path=cfg.checkpoint_config.task_register_embeddings_path if os.path.exists(cfg.checkpoint_config.task_register_embeddings_path) else "dit_task_register_embeddings_0x1561",
         network_alpha=cfg.model_config.network_alpha,
         double_blocks_idx=cfg.model_config.double_blocks,
         single_blocks_idx=cfg.model_config.single_blocks,
@@ -167,7 +167,7 @@ def run_model(
 
 def example_pipeline(
     image_reference, image_target_1, image_target_2, custmization_mode,
-    input_mask_mode, seg_ref_mode, prompt, seed, true_gs, eg_idx
+    input_mask_mode, seg_ref_mode, prompt, seed, true_gs, eg_idx, num_steps, guidance
 ):
     """Handle example loading in the UI."""
 
@@ -186,9 +186,10 @@ def example_pipeline(
         else:
             image_target_state = np.array(image_target_2['composite'].convert("RGB"))
         mask_target_state = np.array(Image.open(MASK_TGT[int(eg_idx)]))
-    else:
-        image_target_state = np.ones_like(image_reference_state) * 255
-        mask_target_state = np.zeros_like(image_target_state)
+    else:  # Position-free mode
+        # For Position-free, use the target image from IMG_TGT1 and corresponding mask
+        image_target_state = np.array(image_target_1.convert("RGB"))
+        mask_target_state = np.array(Image.open(MASK_TGT[int(eg_idx)]))
 
     mask_target_binary = mask_target_state / 255
     masked_img = image_target_state * mask_target_binary
@@ -298,6 +299,8 @@ def create_application(pipeline, vlm_processor, vlm_model, assets_cache_dir):
                             seed,
                             true_gs,
                             eg_idx,
+                            num_steps,
+                            guidance,
                         ],
                         outputs=[
                             image_reference_ori_state, 

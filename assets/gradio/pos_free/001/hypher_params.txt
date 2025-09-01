@@ -1,8 +1,0 @@
-prompt: The charming, soft plush toy is joyfully wandering through a lush, dense jungle, surrounded by vibrant green foliage and towering trees.
-custmization_mode: Position-free
-input_mask_mode: Precise mask
-seg_ref_mode: Full Ref
-seed: 1826105465
-guidance_scale: 40
-num_inference_steps: 50
-num_samples: 1
