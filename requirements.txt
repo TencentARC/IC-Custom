@@ -19,5 +19,8 @@ xformers==0.0.29.post2
 torch==2.6.0
 torchaudio==2.6.0
 torchvision==0.21.0
-SentencePiece==0.2.1
+sentencepiece==0.2.0
+huggingface-hub==0.34.4
+timm==1.0.19
+open_clip_torch==3.1.0
 # flash-attn==2.7.3
