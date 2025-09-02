@@ -45,7 +45,7 @@ if __name__ == "__main__":
         ignore_patterns=["*.h5", "tf_model.h5"], # Ignore TensorFlow model files
     )
     snapshot_download(
-        repo_id="google/t5-v1_1-xxl",
+        repo_id="DeepFloyd/t5-v1_1-xxl",
         local_dir=os.path.join(args.local_dir, "t5-v1_1-xxl"),
         resume_download=True,
         ignore_patterns=["*.h5", "tf_model.h5"], # Ignore TensorFlow model files

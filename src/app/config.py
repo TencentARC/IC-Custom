@@ -14,8 +14,8 @@ def parse_args():
     parser.add_argument(
         "--config",
         type=str,
-        default=None,
-        required=True,
+        default="configs/app/app.yaml",
+        required=False,
         help="path to config",
     )
     parser.add_argument(

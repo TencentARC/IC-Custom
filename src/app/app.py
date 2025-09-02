@@ -17,9 +17,10 @@ from PIL import Image
 import time
 
 # Add current directory to path for imports
-sys.path.append(os.getcwd() + '/src/app')
+sys.path.append(os.getcwd() + 'src/app')
 
 # Import modular components
+from constants import ASPECT_RATIO_TEMPLATE
 from config import parse_args, load_config, setup_environment
 from ui_components import (
     create_theme, create_css, create_header_section, create_customization_section,
@@ -30,21 +31,38 @@ from ui_components import (
 from event_handlers import setup_event_handlers
 from business_logic import (
     init_image_target_1, init_image_target_2, init_image_reference,
-    undo_seg_points, segmentation, get_point, get_brush,
+    undo_seg_points, get_point, get_brush,
     dilate_mask, erode_mask, bounding_box,
     change_input_mask_mode, change_custmization_mode, change_seg_ref_mode,
     vlm_auto_generate, vlm_auto_polish, save_results, set_mobile_predictor,
-    set_ben2_model,
+    set_ben2_model, set_vlm_processor, set_vlm_model,
 )
 
 # Import other dependencies
 from utils import (
-    get_sam_predictor, get_vlm, construct_vlm_gen_prompt, 
-    construct_vlm_polish_prompt, run_vlm, get_ben2_model, 
+    get_sam_predictor, get_vlm, get_ben2_model, 
     prepare_input_images, get_mask_type_ids
 )
 from examples import GRADIO_EXAMPLES, MASK_TGT, IMG_GEN
 from ic_custom.pipelines.ic_custom_pipeline import ICCustomPipeline
+
+# Global variables for pipeline and assets cache directory
+PIPELINE = None
+ASSETS_CACHE_DIR = None
+
+# Force Hugging Face to re-download models and clear cache
+os.environ["HF_HUB_FORCE_DOWNLOAD"] = "1"
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+
+def set_pipeline(pipeline):
+    """Inject pipeline into this module without changing function signatures."""
+    global PIPELINE
+    PIPELINE = pipeline
+
+def set_assets_cache_dir(assets_cache_dir):
+    """Inject assets cache dir into this module without changing function signatures."""
+    global ASSETS_CACHE_DIR
+    ASSETS_CACHE_DIR = assets_cache_dir
 
 
 def initialize_models(args, cfg, device, weight_dtype):
@@ -66,9 +84,10 @@ def initialize_models(args, cfg, device, weight_dtype):
         single_blocks_idx=cfg.model_config.single_blocks,
         device=device,
         weight_dtype=weight_dtype,
+        offload=True,
     )
     pipeline.set_pipeline_offload(True)
-    pipeline.set_show_progress(True)
+    # pipeline.set_show_progress(True)
 
     # Load SAM predictor
     mobile_predictor = get_sam_predictor(cfg.checkpoint_config.sam_path, device)
@@ -90,13 +109,11 @@ def initialize_models(args, cfg, device, weight_dtype):
     return pipeline, mobile_predictor, vlm_processor, vlm_model, ben2_model
 
 
-@torch.no_grad()
 def run_model(
     image_target_state, mask_target_state, image_reference_ori_state,
     image_reference_rmbg_state, prompt, seed, guidance, true_gs, num_steps,
     num_images_per_prompt, use_background_preservation, background_blend_threshold,
     aspect_ratio, custmization_mode, seg_ref_mode, input_mask_mode,
-    pipeline, assets_cache_dir,
     progress=gr.Progress()
 ):
     """Run IC-Custom pipeline with current UI state and return images."""
@@ -123,7 +140,6 @@ def run_model(
    
     mask_type_ids = get_mask_type_ids(custmization_mode, input_mask_mode)
     
-    from constants import ASPECT_RATIO_TEMPLATE
     output_w, output_h = ASPECT_RATIO_TEMPLATE[aspect_ratio]
     image_reference, image_target, mask_target = prepare_input_images(
         image_reference_state, custmization_mode, image_target_state, mask_target_state,
@@ -139,25 +155,28 @@ def run_model(
 
     width, height = image_target.size[0] + image_reference.size[0], image_target.size[1]
 
-    output_img = pipeline(
-        prompt=prompt, width=width, height=height, guidance=guidance,
-        num_steps=num_steps, seed=seed, img_ref=image_reference,
-        img_target=image_target, mask_target=mask_target, img_ip=image_reference,
-        cond_w_regions=[image_reference.size[0]], mask_type_ids=mask_type_ids,
-        use_background_preservation=use_background_preservation,
-        background_blend_threshold=background_blend_threshold, true_gs=true_gs,
-        neg_prompt="worst quality, normal quality, low quality, low res, blurry,",
-        num_images_per_prompt=num_images_per_prompt,
-        gradio_progress=progress,
-    )
-    
+
+    with torch.no_grad():
+        output_img = PIPELINE(
+            prompt=prompt, width=width, height=height, guidance=guidance,
+            num_steps=num_steps, seed=seed, img_ref=image_reference,
+            img_target=image_target, mask_target=mask_target, img_ip=image_reference,
+            cond_w_regions=[image_reference.size[0]], mask_type_ids=mask_type_ids,
+            use_background_preservation=use_background_preservation,
+            background_blend_threshold=background_blend_threshold, true_gs=true_gs,
+            neg_prompt="worst quality, normal quality, low quality, low res, blurry,",
+            num_images_per_prompt=num_images_per_prompt,
+            gradio_progress=progress,
+        )
+
     # Save results
     results = save_results(
         output_img, image_reference, image_target, mask_target, prompt,
         custmization_mode, input_mask_mode, seg_ref_mode, seed, guidance,
         num_steps, num_images_per_prompt, use_background_preservation,
-        background_blend_threshold, true_gs, assets_cache_dir
+        background_blend_threshold, true_gs, ASSETS_CACHE_DIR
     )
+        
     elapsed = time.time() - start_ts
     progress(1.0, desc=f"Completed in {elapsed:.2f}s!")
     gr.Info(f"Finished in {elapsed:.2f}s")
@@ -167,18 +186,17 @@ def run_model(
 
 def example_pipeline(
     image_reference, image_target_1, image_target_2, custmization_mode,
-    input_mask_mode, seg_ref_mode, prompt, seed, true_gs, eg_idx, num_steps, guidance
+    input_mask_mode, seg_ref_mode, prompt, seed, true_gs, eg_idx, 
+    num_steps, guidance
 ):
     """Handle example loading in the UI."""
 
     if seg_ref_mode == "Full Ref":
         image_reference_ori_state = np.array(image_reference.convert("RGB"))
         image_reference_rmbg_state = None
-        image_reference_state = image_reference_ori_state
     else:
         image_reference_rmbg_state = np.array(image_reference.convert("RGB"))
         image_reference_ori_state = None
-        image_reference_state = image_reference_rmbg_state
 
     if custmization_mode == "Position-aware":
         if input_mask_mode == "Precise mask":
@@ -202,7 +220,6 @@ def example_pipeline(
         mask_gallery = gr.skip()
 
     result_gallery = [Image.open(IMG_GEN[int(eg_idx)]).convert("RGB")]
-
 
     if custmization_mode == "Position-free":
         return (image_reference_ori_state, image_reference_rmbg_state, image_target_state,
@@ -228,8 +245,7 @@ def example_pipeline(
         )
 
 
-
-def create_application(pipeline, vlm_processor, vlm_model, assets_cache_dir):
+def create_application():
     """Create the main Gradio application."""
     # Create theme and CSS
     theme = create_theme()
@@ -300,7 +316,7 @@ def create_application(pipeline, vlm_processor, vlm_model, assets_cache_dir):
                             true_gs,
                             eg_idx,
                             num_steps,
-                            guidance,
+                            guidance
                         ],
                         outputs=[
                             image_reference_ori_state, 
@@ -330,27 +346,17 @@ def create_application(pipeline, vlm_processor, vlm_model, assets_cache_dir):
             image_reference, image_reference_rmbg_state,
             ## Functions
             change_input_mask_mode, change_custmization_mode, 
-            lambda seg_ref_mode, img_ref, move_to_center: change_seg_ref_mode(
-                seg_ref_mode, img_ref, move_to_center
-            ),
+            change_seg_ref_mode,
             init_image_target_1, init_image_target_2, init_image_reference,
             get_point, undo_seg_points,
             get_brush,
             # VLM buttons
             vlm_generate_btn, vlm_polish_btn,
             # VLM functions
-            lambda img_target, img_ref, mask_target, cust_mode: vlm_auto_generate(
-                img_target, img_ref, mask_target, cust_mode, vlm_processor, vlm_model,
-                torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-                construct_vlm_gen_prompt, run_vlm
-            ),
-            lambda prompt, cust_mode: vlm_auto_polish(
-                prompt, cust_mode, vlm_processor, vlm_model,
-                torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-                construct_vlm_polish_prompt, run_vlm
-            ),
+            vlm_auto_generate,
+            vlm_auto_polish,
             dilate_mask, erode_mask, bounding_box,
-            lambda *args: run_model(*args, pipeline, assets_cache_dir),
+            run_model,
             ## Other components
             selected_points, prompt,
             use_background_preservation, background_blend_threshold, seed,
@@ -383,17 +389,22 @@ def main():
     pipeline, mobile_predictor, vlm_processor, vlm_model, ben2_model = initialize_models(
         args, cfg, device, weight_dtype
     )
+    
+    set_pipeline(pipeline)
+    set_assets_cache_dir(args.assets_cache_dir)
+
     # Inject mobile predictor into business logic module so get_point can access it without lambdas
     set_mobile_predictor(mobile_predictor)
     set_ben2_model(ben2_model)
+    set_vlm_processor(vlm_processor)
+    set_vlm_model(vlm_model)
 
     # Create and launch the application
-    demo = create_application(
-        pipeline, vlm_processor, vlm_model, args.assets_cache_dir
-    )
+    demo = create_application()
     
     # Launch the demo
-    demo.launch(server_name="0.0.0.0", server_port=12345)
+    demo.launch(server_port=7860, server_name="0.0.0.0",
+                allowed_paths=[os.path.abspath(os.path.join(os.path.dirname(__file__), "results"))])
 
 
 if __name__ == "__main__":

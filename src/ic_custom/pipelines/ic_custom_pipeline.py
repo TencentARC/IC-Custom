@@ -59,19 +59,19 @@ class ICCustomPipeline:
         weight_dtype: torch.dtype = torch.bfloat16,
         show_progress: bool = False,
         use_flash_attention: bool = False,
-):
+    ):
         self.device = device
         self.offload = offload
         self.weight_dtype = weight_dtype
         
-        self.clip = load_clip(clip_path, self.device if not offload else "cpu", dtype=self.weight_dtype)
-        self.t5 = load_t5(t5_path, self.device if not offload else "cpu", max_length=512, dtype=self.weight_dtype)
+        self.clip = load_clip(clip_path, self.device if not offload else "cpu", dtype=self.weight_dtype).eval() 
+        self.t5 = load_t5(t5_path, self.device if not offload else "cpu", max_length=512, dtype=self.weight_dtype).eval()
 
-        self.ae = load_ae(ae_path, device="cpu" if offload else self.device)
-      
-        self.model = load_ic_custom(dit_path, device="cpu" if offload else self.device, dtype=self.weight_dtype)
+        self.ae = load_ae(ae_path, device="cpu" if offload else self.device).eval()
 
-        self.image_encoder = load_redux(redux_path, siglip_path, device="cpu" if offload else self.device, dtype=self.weight_dtype)
+        self.model = load_ic_custom(dit_path, device="cpu" if offload else self.device, dtype=self.weight_dtype).eval()
+
+        self.image_encoder = load_redux(redux_path, siglip_path, device="cpu" if offload else self.device, dtype=self.weight_dtype).eval()
 
         self.vae_scale_factor = 8
 
@@ -83,10 +83,9 @@ class ICCustomPipeline:
         self.set_boundary_embeddings(boundary_embeddings_path)
         self.set_task_register_embeddings(task_register_embeddings_path)
 
-        self.model.to(self.device)
-
         self.show_progress = show_progress
         self.use_flash_attention = use_flash_attention
+
 
     def set_show_progress(self, show_progress: bool):
         self.show_progress = show_progress
@@ -95,6 +94,11 @@ class ICCustomPipeline:
         self.use_flash_attention = use_flash_attention
 
     def set_pipeline_offload(self, offload: bool):
+        self.ae = self.ae.to("cpu" if offload else self.device)
+        self.model = self.model.to("cpu" if offload else self.device)
+        self.image_encoder = self.image_encoder.to("cpu" if offload else self.device)
+        self.clip = self.clip.to("cpu" if offload else self.device)
+        self.t5 = self.t5.to("cpu" if offload else self.device)
         self.offload = offload
 
     def set_pipeline_gradient_checkpointing(self, enable: bool):
@@ -125,13 +129,17 @@ class ICCustomPipeline:
         single_blocks_idx: str = None,
         ):
         if not os.path.exists(lora_path):
-            lora_path = resolve_model_path(
-                name=lora_path,
-                repo_id_field="repo_id",
-                filename_field="filename",
-                ckpt_path_field="ckpt_path",
-                hf_download=True,
-            )
+            lora_path = "dit_lora_0x1561"
+
+            
+        lora_path = resolve_model_path(
+            name=lora_path,
+            repo_id_field="repo_id",
+            filename_field="filename",
+            ckpt_path_field="ckpt_path",
+            hf_download=True,
+        )
+
         weights = load_sft(lora_path)
         self.update_model_with_lora(weights, network_alpha, double_blocks_idx, single_blocks_idx)
 
@@ -162,12 +170,10 @@ class ICCustomPipeline:
                 layer_index = int(match.group(1))
 
             if name.startswith("double_blocks") and layer_index in double_blocks_idx:
-                # print("setting LoRA Processor for", name)
                 lora_attn_procs[name] = DoubleStreamBlockLoraProcessor(
                     dim=3072, rank=rank, network_alpha=network_alpha
                 )
             elif name.startswith("single_blocks") and layer_index in single_blocks_idx:
-                # print("setting LoRA Processor for", name)
                 lora_attn_procs[name] = SingleStreamBlockLoraProcessor(
                     dim=3072, rank=rank, network_alpha=network_alpha
                 )
@@ -180,37 +186,43 @@ class ICCustomPipeline:
 
     def set_img_txt_in(self, img_txt_in_path: str):
         if not os.path.exists(img_txt_in_path):
-            img_txt_in_path = resolve_model_path(
-                name=img_txt_in_path,
-                repo_id_field="repo_id",
-                filename_field="filename",
-                ckpt_path_field="ckpt_path",
-                hf_download=True,
-            )
+            img_txt_in_path = "dit_txt_img_in_0x1561"
+            
+        img_txt_in_path = resolve_model_path(
+            name=img_txt_in_path,
+            repo_id_field="repo_id",
+            filename_field="filename",
+            ckpt_path_field="ckpt_path",
+            hf_download=True,
+        )
         weights = load_sft(img_txt_in_path)
         self.load_model_weights(weights, strict=False)
 
     def set_boundary_embeddings(self, boundary_embeddings_path: str):
         if not os.path.exists(boundary_embeddings_path):
-            boundary_embeddings_path = resolve_model_path(
-                name=boundary_embeddings_path,
-                repo_id_field="repo_id",
-                filename_field="filename",
-                ckpt_path_field="ckpt_path",
-                hf_download=True,
-            )
+            boundary_embeddings_path = "dit_boundary_embeddings_0x1561"
+            
+        boundary_embeddings_path = resolve_model_path(
+            name=boundary_embeddings_path,
+            repo_id_field="repo_id",
+            filename_field="filename",
+            ckpt_path_field="ckpt_path",
+            hf_download=True,
+        )
         weights = load_sft(boundary_embeddings_path)
         self.load_model_weights(weights, strict=False)
 
     def set_task_register_embeddings(self, task_register_embeddings_path: str):
         if not os.path.exists(task_register_embeddings_path):
-            task_register_embeddings_path = resolve_model_path(
-                name=task_register_embeddings_path,
-                repo_id_field="repo_id",
-                filename_field="filename",
-                ckpt_path_field="ckpt_path",
-                hf_download=True,
-            )
+            task_register_embeddings_path = "dit_task_register_embeddings_0x1561"
+            
+        task_register_embeddings_path = resolve_model_path(
+            name=task_register_embeddings_path,
+            repo_id_field="repo_id",
+            filename_field="filename",
+            ckpt_path_field="ckpt_path",
+            hf_download=True,
+        )
         weights = load_sft(task_register_embeddings_path)
         self.load_model_weights(weights, strict=False)
 
@@ -274,6 +286,7 @@ class ICCustomPipeline:
         num_images_per_prompt: int = 1,
         gradio_progress=None,
         ):
+
 
         width = 16 * (width // 16)
         height = 16 * (height // 16)
@@ -387,6 +400,7 @@ class ICCustomPipeline:
             self.model = self.model.to(self.device)
             self.ae.encoder = self.ae.encoder.to(self.device)
 
+
             inp_img_cond = prepare_image_cond(
                 ae=self.ae,  
                 img_ref=img_ref, 
@@ -396,6 +410,7 @@ class ICCustomPipeline:
                 device=self.device,
                 num_images_per_prompt=num_images_per_prompt,
                 )
+
           
             x = denoise(
                 self.model,
@@ -425,14 +440,12 @@ class ICCustomPipeline:
                 use_flash_attention=self.use_flash_attention,
                 gradio_progress=gradio_progress,
             )
-                
 
             if self.offload:
                 self.offload_model_to_cpu(self.model, self.ae.encoder)
-            
-            self.ae.decoder = self.ae.decoder.to(x.device)
 
             x = unpack(x.float(), height, width)
+            self.ae.decoder = self.ae.decoder.to(x.device)
             x = self.ae.decode(x)
 
             if self.offload:
@@ -454,4 +467,3 @@ class ICCustomPipeline:
             output_imgs_target.append(output_img_target)
 
         return output_imgs_target
-

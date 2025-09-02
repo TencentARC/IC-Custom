@@ -81,7 +81,7 @@ configs = {
         ckpt_path=os.getenv("AE"),
     ),
     "t5-v1_1-xxl": HFModelSpec(
-        repo_id="google/t5-v1_1-xxl",
+        repo_id="DeepFloyd/t5-v1_1-xxl",
         ckpt_path=os.getenv("T5_XXL"),
     ),
     "clip-vit-large-patch14": HFModelSpec(
@@ -116,7 +116,7 @@ configs = {
         repo_id="TencentARC/IC-Custom",
         filename="dit_task_register_embeddings_0x1561.safetensors",
         ckpt_path=os.getenv("DIT_TASK_REGISTER_EMBEDDINGS"),
-    ),
+    )
 }
             
 
@@ -206,6 +206,9 @@ def load_dit(
         model: Loaded Flux model
     """
     # Loading Flux
+    if not os.path.exists(name):
+        name = "flux-fill-dev-dit"
+    
     logger.info("Initializing Flux model")
     
     # Resolve checkpoint path
@@ -249,9 +252,11 @@ def load_ic_custom(
         model: Loaded IC_Custom model
     """
     logger.info("Initializing IC-Custom model")
-    
+
     # Resolve checkpoint path
-   
+    if not os.path.exists(name):
+        name = "flux-fill-dev-dit"
+    
     ckpt_path = resolve_model_path(
         name=name,
         repo_id_field="repo_id",
@@ -305,16 +310,14 @@ def load_embedder(
         repo_id_field="repo_id",
         filename_field=None,  # No specific file needed
         ckpt_path_field="ckpt_path",
-        hf_download=True, 
+        hf_download=True,  # HFEmbedder handles downloads itself
     )
-    
     # Initialize and return the model
     model = HFEmbedder(
         path, 
         max_length=max_length, 
         is_clip=is_clip, 
-        torch_dtype=dtype, 
-    ).to(device)
+    ).to(device).to(dtype)
     
     return model
 
@@ -337,7 +340,11 @@ def load_t5(
     Returns:
         model: Loaded T5 model
     """
+    if not os.path.exists(name):
+        name = "t5-v1_1-xxl"
+
     logger.info(f"Loading T5 model: {name}")
+    
     return load_embedder(
         name=name,
         is_clip=False,
@@ -363,7 +370,11 @@ def load_clip(
     Returns:
         model: Loaded CLIP model
     """
+    if not os.path.exists(name):
+        name = "clip-vit-large-patch14"
+
     logger.info(f"Loading CLIP model: {name}")
+    
     return load_embedder(
         name=name,
         is_clip=True,
@@ -388,6 +399,10 @@ def load_ae(
     Returns:
         model: Loaded AutoEncoder model
     """
+
+    if not os.path.exists(name):
+        name = "flux-fill-dev-ae"
+    
     logger.info(f"Loading AutoEncoder model: {name}")
     
     # Convert device string to torch.device if needed
@@ -402,7 +417,6 @@ def load_ae(
         ckpt_path_field="ckpt_path",
         hf_download=True,
     )
-
     # Initialize model
     with device:
         ae = AutoEncoder(AE_PARAMS)
@@ -431,11 +445,17 @@ def load_redux(
     Returns:
         model: Loaded Redux Image Encoder model
     """
+
+    if not os.path.exists(redux_name):
+        redux_name = "flux1-redux-dev"
+    if not os.path.exists(siglip_name):
+        siglip_name = "siglip-so400m-patch14-384"
+    
     logger.info(f"Loading Redux Image Encoder: redux={redux_name}, siglip={siglip_name}")
     
     # Convert device string to torch.device if needed
     if isinstance(device, str):
-        device = torch.device(device)
+        device = torch.device(device)    
 
     # Resolve Redux path
     redux_path = resolve_model_path(
@@ -453,8 +473,9 @@ def load_redux(
         repo_id_field="repo_id",
         filename_field=None,  # No specific file needed
         ckpt_path_field="ckpt_path",
-        hf_download=True,
+        hf_download=True,  # ReduxImageEncoder handles SigLIP downloads itself
     )
+
 
     # Initialize and return the model
     with device:
@@ -552,7 +573,7 @@ def load_model_weights(
     weights_path, 
     device=None, 
     strict=False, 
-    assign=True, 
+    assign=False, 
     filter_keys=False
 ):
     """
@@ -582,6 +603,7 @@ def load_model_weights(
         state_dict = load_sft(weights_path, device=device_str)
     else:
         state_dict = load_sft(weights_path)
+
     
     # Handle different loading strategies
     if filter_keys:
@@ -596,13 +618,12 @@ def load_model_weights(
     else:
         # Standard loading
         missing, unexpected = model.load_state_dict(state_dict, strict=strict, assign=assign)
-    
+
     # Report any issues with loading
     if len(unexpected) > 0:
         print_load_warning(unexpected=unexpected)
-    
-    return model
 
+    return model
 
 
 def load_safetensors(path):

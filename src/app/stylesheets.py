@@ -1432,16 +1432,6 @@ def get_css() -> str:
         box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;
     }
 
-
-
-
-
-
-
-
-
-
-
     /* Label styling */
     .gradio-label {
         color: var(--text-primary);

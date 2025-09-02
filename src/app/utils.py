@@ -15,7 +15,7 @@ from qwen_vl_utils import process_vision_info
 from huggingface_hub import hf_hub_download
 
 sys.path.append(os.getcwd())
-from src.app import BEN2
+import BEN2
 
 
 ## Ordinary function

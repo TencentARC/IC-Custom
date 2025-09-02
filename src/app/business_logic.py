@@ -20,6 +20,10 @@ from constants import (
     DEFAULT_MASK_ALPHA, DEFAULT_COLOR_ALPHA, TIMESTAMP_FORMAT, SEGMENTATION_COLORS, SEGMENTATION_MARKERS
 )
 
+from utils import run_vlm, construct_vlm_gen_prompt, construct_vlm_polish_prompt
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # Global holder for SAM mobile predictor injected from the app layer
 MOBILE_PREDICTOR = None
 BEN2_MODEL = None   # ben2 model injected from the app layer    
@@ -33,6 +37,16 @@ def set_ben2_model(ben2_model):
     """Inject ben2 model into this module without changing function signatures."""
     global BEN2_MODEL
     BEN2_MODEL = ben2_model
+
+def set_vlm_processor(vlm_processor):
+    """Inject vlm processor into this module without changing function signatures."""
+    global VLM_PROCESSOR
+    VLM_PROCESSOR = vlm_processor
+
+def set_vlm_model(vlm_model):
+    """Inject vlm model into this module without changing function signatures."""
+    global VLM_MODEL
+    VLM_MODEL = vlm_model
 
     
 def init_image_target_1(target_image):
@@ -48,7 +62,6 @@ def init_image_target_1(target_image):
             image_target_state = np.array(target_image.convert("RGB"))
     except Exception as e:
         # If there's an error processing the image, skip initialization
-        print(f"Warning: Error processing target image in init_image_target: {e}")
         return (
             gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
             gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
@@ -87,7 +100,6 @@ def init_image_target_2(target_image):
             image_target_state = np.array(target_image.convert("RGB"))
     except Exception as e:
         # If there's an error processing the image, skip initialization
-        print(f"Warning: Error processing target image in init_image_target: {e}")
         return (
             gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
             gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(), gr.skip(),
@@ -400,8 +412,8 @@ def change_custmization_mode(custmization_mode, input_mask_mode):
                 gr.update(value="<s>Select a input mask mode</s>", visible=False),
                 gr.update(value="<s>Input target image & mask (Iterate clicking or brushing until the target is covered)</s>", visible=False),
                 gr.update(value="<s>View or modify the target mask</s>", visible=False),
-                gr.update(value="3. Input text prompt (necessary)"),
-                gr.update(value="4. Submit and view the output"),
+                gr.update(value="3\. Input text prompt (necessary)"),
+                gr.update(value="4\. Submit and view the output"),
                 gr.update(visible=False),
                 gr.update(visible=False),
                 
@@ -414,11 +426,11 @@ def change_custmization_mode(custmization_mode, input_mask_mode):
                     gr.update(interactive=True, visible=True),
                     gr.update(interactive=True, visible=True),
                     gr.update(interactive=True, visible=True),
-                    gr.update(value="3. Select a input mask mode", visible=True),
-                    gr.update(value="4. Input target image & mask (Iterate clicking or brushing until the target is covered)", visible=True),
-                    gr.update(value="6. View or modify the target mask", visible=True),
-                    gr.update(value="5. Input text prompt (optional)", visible=True),
-                    gr.update(value="7. Submit and view the output", visible=True),
+                    gr.update(value="3\. Select a input mask mode", visible=True),
+                    gr.update(value="4\. Input target image & mask (Iterate clicking or brushing until the target is covered)", visible=True),
+                    gr.update(value="6\. View or modify the target mask", visible=True),
+                    gr.update(value="5\. Input text prompt (optional)", visible=True),
+                    gr.update(value="7\. Submit and view the output", visible=True),
                     gr.update(visible=True, value="Precise mask"),
                     gr.update(visible=True),
                     )
@@ -429,15 +441,14 @@ def change_custmization_mode(custmization_mode, input_mask_mode):
                     gr.update(interactive=True, visible=True),
                     gr.update(interactive=True, visible=True),
                     gr.update(interactive=True, visible=True),
-                    gr.update(value="3. Select a input mask mode", visible=True),
-                    gr.update(value="4. Input target image & mask (Iterate clicking or brushing until the target is covered)", visible=True),
-                    gr.update(value="6. View or modify the target mask", visible=True),
-                    gr.update(value="5. Input text prompt (optional)", visible=True),
-                    gr.update(value="7. Submit and view the output", visible=True),
+                    gr.update(value="3\. Select a input mask mode", visible=True),
+                    gr.update(value="4\. Input target image & mask (Iterate clicking or brushing until the target is covered)", visible=True),
+                    gr.update(value="6\. View or modify the target mask", visible=True),
+                    gr.update(value="5\. Input text prompt (optional)", visible=True),
+                    gr.update(value="7\. Submit and view the output", visible=True),
                     gr.update(visible=True, value="User-drawn mask"),
                     gr.update(visible=True),
                     )
-
 
 
 def change_seg_ref_mode(seg_ref_mode, image_reference_state, move_to_center):
@@ -462,9 +473,11 @@ def change_seg_ref_mode(seg_ref_mode, image_reference_state, move_to_center):
 
 
 def vlm_auto_generate(image_target_state, image_reference_state, mask_target_state, 
-                      custmization_mode, vlm_processor, vlm_model, device,
-                      construct_vlm_gen_prompt, run_vlm):
+                      custmization_mode):
     """Auto-generate prompt using VLM."""
+
+    global VLM_PROCESSOR, VLM_MODEL
+
     if custmization_mode == "Position-aware":
         if image_target_state is None or mask_target_state is None:
             gr.Warning("Please upload the target image and get mask first")
@@ -474,18 +487,20 @@ def vlm_auto_generate(image_target_state, image_reference_state, mask_target_sta
         gr.Warning("Please upload the reference image first")
         return None
 
-    if vlm_processor is None:
+    if VLM_PROCESSOR is None or VLM_MODEL is None:
         gr.Warning("Please enable vlm for prompt first")
         return None
 
     messages = construct_vlm_gen_prompt(image_target_state, image_reference_state, mask_target_state, custmization_mode)
-    output_text = run_vlm(vlm_processor, vlm_model, messages, device)
+    output_text = run_vlm(VLM_PROCESSOR, VLM_MODEL, messages, device=device)
     return output_text
 
 
-def vlm_auto_polish(prompt, custmization_mode, vlm_processor, vlm_model, device,
-                     construct_vlm_polish_prompt, run_vlm):
+def vlm_auto_polish(prompt, custmization_mode):
     """Auto-polish prompt using VLM."""
+
+    global VLM_PROCESSOR, VLM_MODEL
+
     if prompt is None:
         gr.Warning("Please input the text prompt first")
         return None
@@ -493,13 +508,14 @@ def vlm_auto_polish(prompt, custmization_mode, vlm_processor, vlm_model, device,
     if custmization_mode == "Position-aware":
         gr.Warning("Polishing only works in position-free mode")
         return prompt
-    
-    if vlm_processor is None:
+
+
+    if VLM_PROCESSOR is None or VLM_MODEL is None:
         gr.Warning("Please enable vlm for prompt first")
-        return None
+        return prompt
 
     messages = construct_vlm_polish_prompt(prompt)
-    output_text = run_vlm(vlm_processor, vlm_model, messages, device)
+    output_text = run_vlm(VLM_PROCESSOR, VLM_MODEL, messages, device=device)
     return output_text
 
 

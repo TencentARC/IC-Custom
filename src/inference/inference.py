@@ -99,7 +99,8 @@ def parse_args() -> Any:
     parser.add_argument(
         "--config",
         type=str,
-        required=True,
+        required=False,
+        default="configs/inference/inference.yaml",
         help="Path to YAML config file",
     )
     parser.add_argument(
@@ -155,6 +156,7 @@ def main() -> None:
         single_blocks_idx=model_config.single_blocks,
         device=device,
         weight_dtype=weight_dtype,
+        offload=inference_config.offload,
     )
     pipeline.set_pipeline_offload(inference_config.offload)
     pipeline.set_show_progress(inference_config.show_progress)

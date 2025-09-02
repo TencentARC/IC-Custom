@@ -170,7 +170,6 @@ We also thank [Hugging Face](https://huggingface.co/) for providing professional
 Current limitations are mainly inference speed and the need for more flexible instruction following. We plan to improve these aspects in future updates. If you have any feedback, please feel free to contact us.
 
 
-
 ## 📄 License
 
 We are pleased to support the open source community. For complete license details, see [LICENSE](LICENSE) and [NOTICE](NOTICE). 

@@ -1,0 +1,1 @@
+{"prompt": "", "custmization_mode": "Position-aware", "input_mask_mode": "Precise mask", "seg_ref_mode": "Full Ref", "seed": 2126677963, "guidance": 48, "num_steps": 32, "num_images_per_prompt": 1, "use_background_preservation": false, "background_blend_threshold": 0.5, "true_gs": 1}

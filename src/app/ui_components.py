@@ -44,7 +44,7 @@ def create_customization_section():
     with gr.Row():
         # Add a note to remind users to click Clear before starting
         md_custmization_mode = gr.Markdown(
-            "1. Select a Customization Mode\n\n*Tip: Please click the Clear button first to reset all states before starting a new task.*"
+            "1\. Select a Customization Mode\n\n*Tip: Please click the Clear button first to reset all states before starting a new task.*"
         )
     with gr.Row():
         custmization_mode = gr.Radio(
@@ -61,7 +61,7 @@ def create_customization_section():
 def create_image_input_section():
     """Create image input section optimized for left column layout."""
     # Reference image section
-    md_image_reference = gr.Markdown("2. Input reference image")
+    md_image_reference = gr.Markdown("2\. Input reference image")
     with gr.Group():
         image_reference = gr.Image(
             label="Reference Image", 
@@ -73,7 +73,7 @@ def create_image_input_section():
         )
     
     # Input mask mode selection
-    md_input_mask_mode = gr.Markdown("3. Select input mask mode")
+    md_input_mask_mode = gr.Markdown("3\. Select input mask mode")
     with gr.Group():
         input_mask_mode = gr.Radio(
             ["Precise mask", "User-drawn mask"],
@@ -84,7 +84,7 @@ def create_image_input_section():
         )
     
     # Target image section
-    md_target_image = gr.Markdown("4. Input target image & mask (Iterate clicking or brushing until the target is covered)")
+    md_target_image = gr.Markdown("4\. Input target image & mask (Iterate clicking or brushing until the target is covered)")
     
     # Precise mask mode
     with gr.Group():
@@ -129,7 +129,7 @@ def create_image_input_section():
 
 def create_prompt_section():
     """Create the text prompt input section with improved layout."""
-    md_prompt = gr.Markdown("5. Input text prompt (optional)")
+    md_prompt = gr.Markdown("5\. Input text prompt (optional)")
     with gr.Group():
         prompt = gr.Textbox(
             placeholder="Please input the description for the target scene.", 
@@ -243,7 +243,7 @@ def create_advanced_options_section():
 
 def create_mask_operation_section():
     """Create mask operation section optimized for right column (outputs)."""
-    md_mask_operation = gr.Markdown("6. View or modify the target mask")
+    md_mask_operation = gr.Markdown("6\. View or modify the target mask")
 
     with gr.Group():
         # Mask gallery with responsive layout
@@ -293,7 +293,7 @@ def create_mask_operation_section():
 
 def create_output_section():
     """Create the output section optimized for right column."""
-    md_submit = gr.Markdown("7. Submit and view the output")
+    md_submit = gr.Markdown("7\. Submit and view the output")
     
     # Generation controls at top for better workflow
     with gr.Group():
