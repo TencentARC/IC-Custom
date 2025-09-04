@@ -42,7 +42,7 @@ IC-Custom 面向多样化的图像定制场景，包括：
 - **无遮罩定制**（IP 定制）与人脸等能力仍在持续优化，欢迎社区反馈。  
 - 正在探索**加速**（量化、蒸馏）与更细粒度的控制（如产品定制化视角）。  
 
-**资源**
+**ComfyUI支持**
 
 - **ComfyUI**： [ComfyUI_RH_ICCustom](https://github.com/HM-RunningHub/ComfyUI_RH_ICCustom)  
 - **RunningHub**：
