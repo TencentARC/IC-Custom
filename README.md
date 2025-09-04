@@ -14,6 +14,8 @@
 </div>
 
 
+
+
 ## 📋 Overview
 
 IC-Custom is designed for diverse image customization scenarios, including:
@@ -30,8 +32,21 @@ IC-Custom is designed for diverse image customization scenarios, including:
 
 ---
 
+## ✨ Note
+
+- This is the **first release** of IC-Custom (0x1561) 🎉.  
+- The model is currently stronger at **masked customization** for categories such as **bags 👜, perfumes 💎, clothes 👗, and rigid objects**.  
+- Training data ensures quality (≥800px ✅) but is still limited in scale and diversity. Face-related data and style transfer are not yet included.  
+- The **position-free ability** (IP customization without masks), along with other capabilities such as face customization, is still being improved and will be further refined based on community feedback 🔄.
+- We are also exploring **acceleration techniques** (quantization, distillation) and **finer-grained customization** (e.g., flexible control of product viewpoints 👀).  
+
+Special thanks to [ComfyUI_RH_ICCustom](https://github.com/HM-RunningHub/ComfyUI_RH_ICCustom) for providing ComfyUI deployment support ❤️.  
+
+
+
 ## 📑 Table of Contents
 - [📋 Overview](#-overview)
+- [✨ Note](#-note)
 - [📑 Table of Contents](#-table-of-contents)
 - [🚀 Environment Requirements](#-environment-requirements)
 - [🔧 Installation](#-installation)
