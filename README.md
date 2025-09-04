@@ -1,3 +1,5 @@
+
+
 <div align="center">
 
 <img alt="ic-custom" src="./assets/IC-Custom-Icon.png">
@@ -14,7 +16,9 @@
 </div>
 
 
-
+<p align="center">
+  <a href="README.md"><strong>English</strong></a> | <a href="README_zh-CN.md"><strong>简体中文</strong></a>
+</p>
 
 ## 📋 Overview
 
