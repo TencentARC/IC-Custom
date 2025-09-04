@@ -40,7 +40,17 @@ IC-Custom is designed for diverse image customization scenarios, including:
 - The **position-free ability** (IP customization without masks), along with other capabilities such as face customization, is still being improved and will be further refined based on community feedback 🔄.
 - We are also exploring **acceleration techniques** (quantization, distillation) and **finer-grained customization** (e.g., flexible control of product viewpoints 👀).  
 
-Special thanks to [ComfyUI_RH_ICCustom](https://github.com/HM-RunningHub/ComfyUI_RH_ICCustom) for providing ComfyUI deployment support ❤️.  
+
+**Resources**
+
+- **ComfyUI**: [ComfyUI_RH_ICCustom](https://github.com/HM-RunningHub/ComfyUI_RH_ICCustom)  
+- **RunningHub**:  
+  - [IC Custom角色+场景迁移 V1](https://www.runninghub.cn/post/1963310792110215170/?inviteCode=rh-v1121)  
+  - [IC Custom万物迁移双图参考 V1](https://www.runninghub.cn/post/1963304787548811266/?inviteCode=rh-v1121)  
+  - [IC Custom换装迁移 V1](https://www.runninghub.cn/post/1963310832354562049/?inviteCode=rh-v1121)  
+  - [IC Custom万物迁移单图参考 V1](https://www.runninghub.cn/post/1963307022995402753/?inviteCode=rh-v1121)  
+
+Acknowledgements: ComfyUI deployment support by [HM-RunningHub](https://github.com/HM-RunningHub); RunningHub workflows by [this creator](https://www.runninghub.cn/user-center/1819214514410942465).  
 
 ---
 
