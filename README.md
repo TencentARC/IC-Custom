@@ -41,7 +41,7 @@ IC-Custom is designed for diverse image customization scenarios, including:
 - We are also exploring **acceleration techniques** (quantization, distillation) and **finer-grained customization** (e.g., flexible control of product viewpoints 👀).  
 
 
-**Resources**
+**Community Support**
 
 - **ComfyUI**: [ComfyUI_RH_ICCustom](https://github.com/HM-RunningHub/ComfyUI_RH_ICCustom)  
 - **RunningHub**:
