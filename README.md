@@ -42,7 +42,7 @@ IC-Custom is designed for diverse image customization scenarios, including:
 
 Special thanks to [ComfyUI_RH_ICCustom](https://github.com/HM-RunningHub/ComfyUI_RH_ICCustom) for providing ComfyUI deployment support ❤️.  
 
-
+---
 
 ## 📑 Table of Contents
 - [📋 Overview](#-overview)
