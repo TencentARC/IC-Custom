@@ -17,7 +17,7 @@
 
 
 <p align="center">
-  <a href="README.md"><strong>English</strong></a> | <a href="README_zh-CN.md"><strong>简体中文</strong></a>
+  <a href="README.md"><strong>English</strong></a> | <a href="README_zh-CN.md">简体中文</a>
 </p>
 
 ## 📋 Overview
@@ -49,11 +49,14 @@ IC-Custom is designed for diverse image customization scenarios, including:
 
 - **ComfyUI**: [ComfyUI_RH_ICCustom](https://github.com/HM-RunningHub/ComfyUI_RH_ICCustom)  
 - **RunningHub**:
-  - **Video**: [T8star-Aix ComfyUI demo (Bilibili)](https://www.bilibili.com/video/BV17gaCz7EWM/?spm_id_from=333.337.search-card.all.click&vd_source=b08a459ef4b115fe7614b270fe47627a)  
   - [IC Custom角色+场景迁移 V1](https://www.runninghub.cn/post/1963310792110215170/?inviteCode=rh-v1121)  
   - [IC Custom万物迁移双图参考 V1](https://www.runninghub.cn/post/1963304787548811266/?inviteCode=rh-v1121)  
   - [IC Custom换装迁移 V1](https://www.runninghub.cn/post/1963310832354562049/?inviteCode=rh-v1121)  
-  - [IC Custom万物迁移单图参考 V1](https://www.runninghub.cn/post/1963307022995402753/?inviteCode=rh-v1121)  
+  - [IC Custom万物迁移单图参考 V1](https://www.runninghub.cn/post/1963307022995402753/?inviteCode=rh-v1121) 
+
+- **Demonstration video**: 
+  - [T8star-Aix ComfyUI demo (Bilibili)](https://www.bilibili.com/video/BV17gaCz7EWM/?spm_id_from=333.337.search-card.all.click&vd_source=b08a459ef4b115fe7614b270fe47627a)
+  - [Comfyui官方教程 (Bilibili)](https://www.bilibili.com/video/BV1bHYPz8EUi/?vd_source=b08a459ef4b115fe7614b270fe47627a)
   
 
 Acknowledgements: ComfyUI deployment support by [HM-RunningHub](https://github.com/HM-RunningHub); RunningHub workflows by [T8star-Aix](https://www.runninghub.cn/user-center/1819214514410942465).  
